@@ -243,10 +243,25 @@
     const BOTTOM_MARGIN = 120;
     const ROW_HEIGHT = 48;
     const MAX_CONCURRENT = 6;        // 屏幕上同时最多 6 条
-    const MIN_DURATION = 20;         // 飘过时间 20-26 秒
+    const MIN_DURATION = 20;
     const MAX_DURATION = 26;
-    const LAUNCH_GAP = 3200;         // 两条弹幕发射间隔至少 3.2 秒
-    const ROUND_PAUSE = 4000;        // 一轮播完后暂停 4 秒再开始下一轮
+    const ROUND_PAUSE = 4000;
+
+    // 根据弹幕总数动态调整密度
+    function getMaxConcurrent() {
+      const n = danmakuQueue.length;
+      if (n <= 5) return 6;          // 弹幕很少 → 稀疏
+      if (n <= 15) return 10;
+      if (n <= 30) return 15;
+      return 20;                      // 弹幕很多 → 铺满（上限 20）
+    }
+    function getLaunchGap() {
+      const n = danmakuQueue.length;
+      if (n <= 5) return 3500;        // 间隔 3.5s
+      if (n <= 15) return 2500;
+      if (n <= 30) return 2000;
+      return 1600;                    // 间隔 1.6s，密集但不乱
+    }
 
     let rowCount;
     let rowFreeAt;
@@ -259,11 +274,11 @@
     recalcRows();
     window.addEventListener('resize', recalcRows);
 
-    let danmakuQueue = [];        // 总弹幕列表（不断增加）
-    let roundQueue = [];          // 本轮播放列表（开轮时快照）
-    let roundIndex = 0;           // 本轮播到第几条
-    let activeCount = 0;          // 屏幕上正在飞的弹幕数
-    let lastLaunchTime = 0;       // 上一条发射时间
+    let danmakuQueue = [];
+    let roundQueue = [];
+    let roundIndex = 0;
+    let activeCount = 0;
+    let lastLaunchTime = 0;
     let roundTimer = null;
 
     function findBestRow() {
@@ -308,10 +323,8 @@
     function launchNext() {
       clearTimeout(roundTimer);
 
-      // 本轮播完？
       if (roundIndex >= roundQueue.length) {
         if (activeCount > 0) {
-          // 等屏幕上现有的弹幕飞完
           roundTimer = setTimeout(launchNext, 1000);
         } else {
           roundTimer = setTimeout(startRound, ROUND_PAUSE);
@@ -319,38 +332,35 @@
         return;
       }
 
-      // 屏幕上太密集？
-      if (activeCount >= MAX_CONCURRENT) {
-        roundTimer = setTimeout(launchNext, 600);
+      const maxConc = getMaxConcurrent();
+      if (activeCount >= maxConc) {
+        roundTimer = setTimeout(launchNext, 500);
         return;
       }
 
-      // 距离上一条太近？
       const now = Date.now();
-      const gap = now - lastLaunchTime;
-      if (gap < LAUNCH_GAP) {
-        roundTimer = setTimeout(launchNext, LAUNCH_GAP - gap);
+      const gap = getLaunchGap();
+      const since = now - lastLaunchTime;
+      if (since < gap) {
+        roundTimer = setTimeout(launchNext, gap - since);
         return;
       }
 
       const row = findBestRow();
       const rowWait = Math.max(0, rowFreeAt[row] - now);
       if (rowWait > 2000) {
-        // 所有行都还很忙，稍等
         roundTimer = setTimeout(launchNext, rowWait);
         return;
       }
 
-      // 发射！
       const text = roundQueue[roundIndex];
       roundIndex++;
       activeCount++;
       lastLaunchTime = Date.now();
-      rowFreeAt[row] = Date.now() + LAUNCH_GAP;
+      rowFreeAt[row] = Date.now() + gap;
       spawnOne(text, row);
 
-      // 排下一条
-      roundTimer = setTimeout(launchNext, LAUNCH_GAP);
+      roundTimer = setTimeout(launchNext, gap);
     }
 
     function shuffle(arr) {
