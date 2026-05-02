@@ -286,13 +286,13 @@
     }
 
     // 调度下一条弹幕：找到最早释放的行，等到它空闲再发射
-    function scheduleNext() {
+    // forceText: 传文字则优先弹出该文字（新弹幕即时响应），否则从池子取
+    function scheduleNext(forceText) {
       clearTimeout(scheduleTimer);
 
-      const text = getNextFromPool();
+      const text = forceText || getNextFromPool();
       if (!text) {
-        // 还没有弹幕数据，等会儿再试
-        scheduleTimer = setTimeout(scheduleNext, 2000);
+        // 池子还没数据，停掉循环，等有新弹幕时会重新触发
         return;
       }
 
@@ -306,21 +306,7 @@
       scheduleTimer = setTimeout(() => {
         spawnDanmaku(text, bestRow);
         rowFreeAt[bestRow] = Date.now() + ROW_STAGGER;
-        scheduleNext(); // 立刻排下一条
-      }, wait);
-    }
-
-    // 立刻弹出一条指定文字（新弹幕用），抢最早空闲行
-    function spawnImmediately(text) {
-      const now = Date.now();
-      let bestRow = 0;
-      for (let i = 1; i < rowCount; i++) {
-        if (rowFreeAt[i] < rowFreeAt[bestRow]) bestRow = i;
-      }
-      const wait = Math.max(0, rowFreeAt[bestRow] - now);
-      setTimeout(() => {
-        spawnDanmaku(text, bestRow);
-        rowFreeAt[bestRow] = Date.now() + ROW_STAGGER;
+        scheduleNext(); // 继续排下一条
       }, wait);
     }
 
@@ -356,28 +342,22 @@
       const msg = JSON.parse(event.data);
       if (msg.type === 'history') {
         const texts = msg.data.map(d => d.text);
-        // 合并：保留 pool 中已有的，追加新的（去重）
         danmakuPool = [...new Set([...danmakuPool, ...texts])];
-        // 首屏：均匀错开启动，让画面很快就铺满
         if (firstHistory && danmakuPool.length > 0) {
           firstHistory = false;
-          const now = Date.now();
-          for (let i = 0; i < Math.min(danmakuPool.length, rowCount); i++) {
-            const row = i % rowCount;
-            const delay = i * 600; // 每条间隔 600ms 发射
-            rowFreeAt[row] = now + delay + ROW_STAGGER;
-            const text = danmakuPool[i % danmakuPool.length];
-            setTimeout(() => spawnDanmaku(text, row), delay);
+          // 首屏：多条弹幕错开 800ms 发射，快速铺满画面
+          const burstCount = Math.min(danmakuPool.length, rowCount * 2);
+          for (let i = 0; i < burstCount; i++) {
+            const delay = i * 800;
+            setTimeout(() => {
+              scheduleNext(danmakuPool[i % danmakuPool.length]);
+            }, delay);
           }
-          poolCursor = Math.min(danmakuPool.length, rowCount);
-          // 首屏弹幕发完后启动循环调度
-          const maxFree = Math.max(...rowFreeAt);
-          scheduleTimer = setTimeout(scheduleNext, maxFree - now + 200);
         }
       } else if (msg.type === 'new_danmaku') {
-        // 新弹幕加入池子 + 立刻弹出
+        // 新弹幕加入池子，并立刻排进调度队列
         danmakuPool.push(msg.data.text);
-        spawnImmediately(msg.data.text);
+        scheduleNext(msg.data.text);
       } else if (msg.type === 'rejected') {
         showToast(msg.message, '#E17055');
       } else if (msg.type === 'error') {
