@@ -280,6 +280,7 @@
     let activeCount = 0;
     let lastLaunchTime = 0;
     let roundTimer = null;
+    let roundActive = false;   // 是否有轮次在跑
 
     function findBestRow() {
       const now = Date.now();
@@ -309,14 +310,14 @@
     }
 
     function startRound() {
-      // 开新一轮：用当前总队列做快照，打乱让每轮看起来不一样
       roundQueue = [...danmakuQueue];
       shuffle(roundQueue);
       roundIndex = 0;
       if (roundQueue.length === 0) {
-        roundTimer = setTimeout(startRound, 2000);
+        roundActive = false;
         return;
       }
+      roundActive = true;
       launchNext();
     }
 
@@ -327,6 +328,7 @@
         if (activeCount > 0) {
           roundTimer = setTimeout(launchNext, 1000);
         } else {
+          roundActive = false;
           roundTimer = setTimeout(startRound, ROUND_PAUSE);
         }
         return;
@@ -407,8 +409,11 @@
           startRound();
         }
       } else if (msg.type === 'new_danmaku') {
-        // 新弹幕加入总队列，下一轮自动出现
         danmakuQueue.push(msg.data.text);
+        // 如果当前没有轮次在跑（弹幕池之前为空），立刻启动
+        if (!roundActive) {
+          startRound();
+        }
       } else if (msg.type === 'rejected') {
         showToast(msg.message, '#E17055');
       } else if (msg.type === 'error') {

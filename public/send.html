@@ -163,7 +163,9 @@
 
       ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
-        if (msg.type === 'rejected') {
+        if (msg.type === 'new_danmaku') {
+          showToast('发送成功！✨', '#4ECDC4');
+        } else if (msg.type === 'rejected') {
           showToast(msg.message, '#E17055');
         } else if (msg.type === 'error') {
           showToast(msg.message, '#FF8E53');
@@ -212,7 +214,7 @@
       ws.send(JSON.stringify({ type: 'danmaku', text }));
       input.value = '';
       charCount.textContent = '0/100';
-      showToast('发送成功！✨', '#4ECDC4');
+      showToast('审核中...', '#45B7D1');
     }
 
     sendBtn.addEventListener('click', sendDanmaku);
