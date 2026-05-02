@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小1的儿童展 - 弹幕互动</title>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'ZCOOL KuaiLe', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      position: relative;
+    }
+
+    /* 弹幕层 */
+    #danmaku-layer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .danmaku-item {
+      position: absolute;
+      white-space: nowrap;
+      font-size: 28px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      animation: scroll-left linear forwards;
+      pointer-events: none;
+    }
+    @keyframes scroll-left {
+      0%   { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* 标题 */
+    #title-area {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 5;
+      pointer-events: none;
+    }
+    #title-area h1 {
+      font-size: 96px;
+      background: linear-gradient(45deg, #FF6B6B, #FFE66D, #4ECDC4, #FF6B6B);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: rainbow 3s ease infinite;
+      text-shadow: none;
+      filter: drop-shadow(4px 4px 6px rgba(0,0,0,0.2));
+    }
+    @keyframes rainbow {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* 输入区 */
+    #input-area {
+      position: absolute;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      z-index: 20;
+    }
+    #input-area input {
+      width: 360px;
+      padding: 12px 20px;
+      font-size: 20px;
+      border: 3px solid #FF6B6B;
+      border-radius: 30px;
+      outline: none;
+      font-family: inherit;
+      background: rgba(255,255,255,0.9);
+      color: #333;
+    }
+    #input-area button {
+      padding: 12px 28px;
+      font-size: 20px;
+      border: none;
+      border-radius: 30px;
+      background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: bold;
+      transition: transform 0.15s;
+    }
+    #input-area button:hover { transform: scale(1.05); }
+    #input-area button:active { transform: scale(0.95); }
+
+    /* Toast 提示 */
+    #toast {
+      position: absolute;
+      top: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 28px;
+      border-radius: 24px;
+      font-size: 18px;
+      font-family: inherit;
+      z-index: 30;
+      display: none;
+      animation: fadeInOut 2.5s ease forwards;
+    }
+    @keyframes fadeInOut {
+      0%   { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+      15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+      75%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* 二维码 */
+    #qr-area {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 20px;
+      padding: 16px 16px 12px;
+      text-align: center;
+      z-index: 20;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    #qr-area img { width: 140px; height: 140px; display: block; }
+    #qr-area p {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #666;
+      font-family: inherit;
+    }
+
+    /* 音乐开关 */
+    #music-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.9);
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 20;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      transition: transform 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #music-btn:hover { transform: scale(1.1); }
+
+    /* 链接提示 */
+    #link-hint {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+      z-index: 20;
+      font-family: inherit;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 背景音乐 -->
+  <audio id="bgm" loop preload="auto"
+         src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">
+  </audio>
+
+  <!-- 弹幕层 -->
+  <div id="danmaku-layer"></div>
+
+  <!-- 标题 -->
+  <div id="title-area">
+    <h1>小1的儿童展</h1>
+  </div>
+
+  <!-- 输入框 -->
+  <div id="input-area">
+    <input id="danmaku-input" type="text" maxlength="100"
+           placeholder="输入弹幕，一起互动吧~" autofocus>
+    <button id="send-btn">发送</button>
+  </div>
+
+  <!-- 提示 -->
+  <div id="toast"></div>
+
+  <!-- 二维码 -->
+  <div id="qr-area">
+    <img id="qr-img" src="" alt="扫码发送弹幕">
+    <p>📱 扫码发送弹幕</p>
+  </div>
+
+  <!-- 音乐开关 -->
+  <button id="music-btn" title="音乐开关">🔊</button>
+
+  <!-- 链接 -->
+  <div id="link-hint" style="display:none;">
+    手机发送：<span id="send-url-text"></span>
+  </div>
+
+  <script>
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${location.host}`);
+
+    const danmakuLayer = document.getElementById('danmaku-layer');
+    const input = document.getElementById('danmaku-input');
+    const sendBtn = document.getElementById('send-btn');
+    const toast = document.getElementById('toast');
+    const bgm = document.getElementById('bgm');
+    const musicBtn = document.getElementById('music-btn');
+
+    // 弹幕颜色池
+    const colors = [
+      '#FF6B6B', '#FF8E53', '#FFE66D', '#4ECDC4',
+      '#45B7D1', '#96CEB4', '#FFD93D', '#6C5CE7',
+      '#A29BFE', '#FD79A8', '#FDCB6E', '#00B894',
+      '#E17055', '#00CEC9', '#FAB1A0', '#81ECEC',
+    ];
+
+    // 已占用的行（避免弹幕重叠）
+    let occupiedRows = new Set();
+    const ROW_COUNT = 10;
+    const ROW_HEIGHT = 40;
+
+    function getRandomColor() {
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function getRandomRow() {
+      // 尝试找空闲行
+      const available = [];
+      for (let i = 0; i < ROW_COUNT; i++) {
+        if (!occupiedRows.has(i)) available.push(i);
+      }
+      if (available.length === 0) {
+        // 全部占用则随机选一行
+        return Math.floor(Math.random() * ROW_COUNT);
+      }
+      return available[Math.floor(Math.random() * available.length)];
+    }
+
+    function createDanmaku(text, immediate = false) {
+      const row = getRandomRow();
+      occupiedRows.add(row);
+
+      const el = document.createElement('div');
+      el.className = 'danmaku-item';
+      el.textContent = text;
+      el.style.color = getRandomColor();
+      el.style.top = (60 + row * ROW_HEIGHT) + 'px';
+      // 跳过标题区域中间部分
+      const topVal = 60 + row * ROW_HEIGHT;
+      if (topVal > window.innerHeight * 0.35 && topVal < window.innerHeight * 0.65) {
+        el.style.opacity = '0.7';
+      }
+
+      const duration = 6 + Math.random() * 6; // 6-12秒
+      el.style.animationDuration = duration + 's';
+
+      if (immediate) {
+        // 已存在的历史弹幕，从随机位置开始
+        el.style.animationDelay = (Math.random() * -duration) + 's';
+      }
+
+      danmakuLayer.appendChild(el);
+
+      // 动画结束后清理
+      const cleanupTime = immediate ? (duration * 1000) : (duration * 1000 + 500);
+      setTimeout(() => {
+        el.remove();
+        occupiedRows.delete(row);
+      }, cleanupTime);
+    }
+
+    // 显示 Toast
+    let toastTimer;
+    function showToast(msg, bg = '#FF6B6B') {
+      clearTimeout(toastTimer);
+      toast.textContent = msg;
+      toast.style.background = bg;
+      toast.style.color = '#fff';
+      toast.style.display = 'block';
+      toast.style.animation = 'none';
+      toast.offsetHeight; // reflow
+      toast.style.animation = 'fadeInOut 2.5s ease forwards';
+      toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+
+    // 发送弹幕
+    function sendDanmaku() {
+      const text = input.value.trim();
+      if (!text) return showToast('请输入弹幕内容', '#FF8E53');
+      if (text.length > 100) return showToast('内容不能超过100字', '#FF8E53');
+
+      ws.send(JSON.stringify({ type: 'danmaku', text }));
+      input.value = '';
+    }
+
+    sendBtn.addEventListener('click', sendDanmaku);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendDanmaku();
+    });
+
+    // WebSocket 消息
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+      if (msg.type === 'history') {
+        msg.data.forEach((item) => createDanmaku(item.text, true));
+      } else if (msg.type === 'new_danmaku') {
+        createDanmaku(msg.data.text);
+      } else if (msg.type === 'rejected') {
+        showToast(msg.message, '#E17055');
+      } else if (msg.type === 'error') {
+        showToast(msg.message, '#FF8E53');
+      }
+    };
+
+    ws.onclose = () => {
+      showToast('连接已断开，请刷新页面', '#E17055');
+    };
+
+    // 背景音乐
+    let musicOn = true;
+    bgm.volume = 0.3;
+
+    // 尝试自动播放（需要用户交互后才能真正播放）
+    function tryAutoplay() {
+      bgm.play().then(() => {
+        musicOn = true;
+        musicBtn.textContent = '🔊';
+      }).catch(() => {
+        musicOn = false;
+        musicBtn.textContent = '🔇';
+      });
+    }
+    tryAutoplay();
+
+    // 点击任意位置后尝试播放
+    document.addEventListener('click', () => {
+      if (musicOn && bgm.paused) {
+        bgm.play().catch(() => {});
+      }
+    }, { once: true });
+
+    musicBtn.addEventListener('click', () => {
+      if (musicOn) {
+        bgm.pause();
+        musicOn = false;
+        musicBtn.textContent = '🔇';
+        musicBtn.style.background = 'rgba(255,255,255,0.6)';
+      } else {
+        bgm.play().then(() => {
+          musicOn = true;
+          musicBtn.textContent = '🔊';
+          musicBtn.style.background = 'rgba(255,255,255,0.9)';
+        }).catch(() => {});
+      }
+    });
+
+    // 二维码
+    fetch('/api/qrcode')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('qr-img').src = data.qrcode;
+        document.getElementById('send-url-text').textContent = data.url;
+        document.getElementById('link-hint').style.display = 'block';
+      })
+      .catch(() => {
+        document.getElementById('qr-area').querySelector('p').textContent = '二维码加载失败';
+      });
+  </script>
+</body>
+</html>

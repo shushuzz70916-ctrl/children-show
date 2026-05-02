@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>发送弹幕 - 小1的儿童展</title>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'ZCOOL KuaiLe', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 400px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 24px;
+      padding: 32px 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+
+    .card h1 {
+      font-size: 32px;
+      background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .card .subtitle {
+      font-size: 14px;
+      color: #999;
+      margin-bottom: 24px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #danmaku-input {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 18px;
+      border: 3px solid #FF6B6B;
+      border-radius: 16px;
+      outline: none;
+      font-family: inherit;
+      background: #fff;
+      color: #333;
+      -webkit-appearance: none;
+    }
+    #danmaku-input:focus {
+      border-color: #FF8E53;
+    }
+    #danmaku-input::placeholder {
+      color: #ccc;
+    }
+
+    #send-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 20px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: bold;
+      -webkit-appearance: none;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    #send-btn:active {
+      transform: scale(0.97);
+      opacity: 0.9;
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 12px;
+      color: #bbb;
+      font-family: inherit;
+      margin-top: 4px;
+    }
+
+    #toast {
+      margin-top: 16px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-family: inherit;
+      display: none;
+      text-align: center;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 1.5s infinite;
+    }
+    .status-dot.connected { background: #4ECDC4; }
+    .status-dot.disconnected { background: #E17055; animation: none; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .connection-status {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #bbb;
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>🎈 小1的儿童展</h1>
+    <p class="subtitle">发送弹幕，出现在大屏幕上！</p>
+
+    <div class="input-group">
+      <input id="danmaku-input" type="text" maxlength="100"
+             placeholder="输入弹幕内容..." autofocus>
+      <span class="char-count" id="char-count">0/100</span>
+      <button id="send-btn">发 送 🚀</button>
+    </div>
+
+    <div id="toast"></div>
+    <div class="connection-status">
+      <span id="status-dot" class="status-dot"></span>
+      <span id="status-text">连接中...</span>
+    </div>
+  </div>
+
+  <script>
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    let ws;
+
+    function connect() {
+      ws = new WebSocket(`${protocol}//${location.host}`);
+
+      ws.onopen = () => {
+        document.getElementById('status-dot').className = 'status-dot connected';
+        document.getElementById('status-text').textContent = '已连接';
+      };
+
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'rejected') {
+          showToast(msg.message, '#E17055');
+        } else if (msg.type === 'error') {
+          showToast(msg.message, '#FF8E53');
+        }
+      };
+
+      ws.onclose = () => {
+        document.getElementById('status-dot').className = 'status-dot disconnected';
+        document.getElementById('status-text').textContent = '连接断开，3秒后重连...';
+        setTimeout(connect, 3000);
+      };
+
+      ws.onerror = () => {
+        ws.close();
+      };
+    }
+
+    const input = document.getElementById('danmaku-input');
+    const sendBtn = document.getElementById('send-btn');
+    const charCount = document.getElementById('char-count');
+    const toast = document.getElementById('toast');
+
+    let toastTimer;
+    function showToast(msg, bg = '#E17055') {
+      clearTimeout(toastTimer);
+      toast.textContent = msg;
+      toast.style.background = bg;
+      toast.style.color = '#fff';
+      toast.style.display = 'block';
+      toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+
+    input.addEventListener('input', () => {
+      charCount.textContent = `${input.value.length}/100`;
+    });
+
+    function sendDanmaku() {
+      const text = input.value.trim();
+      if (!text) return showToast('请输入弹幕内容', '#FF8E53');
+      if (text.length > 100) return showToast('内容不能超过100字', '#FF8E53');
+
+      if (ws.readyState !== WebSocket.OPEN) {
+        return showToast('连接已断开，请稍候重试', '#E17055');
+      }
+
+      ws.send(JSON.stringify({ type: 'danmaku', text }));
+      input.value = '';
+      charCount.textContent = '0/100';
+      showToast('发送成功！✨', '#4ECDC4');
+    }
+
+    sendBtn.addEventListener('click', sendDanmaku);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendDanmaku();
+      }
+    });
+
+    connect();
+  </script>
+</body>
+</html>

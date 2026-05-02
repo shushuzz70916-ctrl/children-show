@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: children-show-danmaku
+    env: node
+    plan: free
+    buildCommand: "npm install"
+    startCommand: "node server.js"
+    envVars:
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: BASE_URL
+        sync: false
