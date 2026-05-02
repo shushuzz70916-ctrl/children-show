@@ -375,17 +375,21 @@
       }
     });
 
-    // 二维码
-    fetch('/api/qrcode')
-      .then(r => r.json())
-      .then(data => {
-        document.getElementById('qr-img').src = data.qrcode;
-        document.getElementById('send-url-text').textContent = data.url;
-        document.getElementById('link-hint').style.display = 'block';
-      })
-      .catch(() => {
-        document.getElementById('qr-area').querySelector('p').textContent = '二维码加载失败';
-      });
+    // 二维码 - 前端直接生成，避免服务端 URL 问题
+    const sendUrl = location.origin + '/send.html';
+    const qrImg = document.getElementById('qr-img');
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(sendUrl)}`;
+    qrImg.onerror = () => {
+      // fallback: 用服务端生成
+      fetch('/api/qrcode')
+        .then(r => r.json())
+        .then(data => { qrImg.src = data.qrcode; })
+        .catch(() => {
+          document.getElementById('qr-area').querySelector('p').textContent = '二维码加载失败';
+        });
+    };
+    document.getElementById('send-url-text').textContent = sendUrl;
+    document.getElementById('link-hint').style.display = 'block';
   </script>
 </body>
 </html>
