@@ -227,70 +227,104 @@
     const bgm = document.getElementById('bgm');
     const musicBtn = document.getElementById('music-btn');
 
-    // 弹幕颜色池
+    // ==================== 弹幕循环播放系统 ====================
     const colors = [
       '#FF6B6B', '#FF8E53', '#FFE66D', '#4ECDC4',
       '#45B7D1', '#96CEB4', '#FFD93D', '#6C5CE7',
       '#A29BFE', '#FD79A8', '#FDCB6E', '#00B894',
       '#E17055', '#00CEC9', '#FAB1A0', '#81ECEC',
     ];
-
-    // 已占用的行（避免弹幕重叠）
-    let occupiedRows = new Set();
-    const ROW_COUNT = 10;
-    const ROW_HEIGHT = 40;
-
     function getRandomColor() {
       return colors[Math.floor(Math.random() * colors.length)];
     }
 
-    function getRandomRow() {
-      // 尝试找空闲行
-      const available = [];
-      for (let i = 0; i < ROW_COUNT; i++) {
-        if (!occupiedRows.has(i)) available.push(i);
-      }
-      if (available.length === 0) {
-        // 全部占用则随机选一行
-        return Math.floor(Math.random() * ROW_COUNT);
-      }
-      return available[Math.floor(Math.random() * available.length)];
+    // 行管理：用「该行何时释放」的时间戳来避免重叠
+    const TOP_MARGIN = 80;
+    const BOTTOM_MARGIN = 120;
+    const ROW_HEIGHT = 48;
+    let rowCount;
+    let rowFreeAt; // 每行下次可用的时间戳 (ms)
+    let firstHistory = true; // 首次加载历史弹幕时需要错开启动
+
+    function recalcRows() {
+      const availH = window.innerHeight - TOP_MARGIN - BOTTOM_MARGIN;
+      rowCount = Math.max(6, Math.floor(availH / ROW_HEIGHT));
+      // 每次屏幕变化时重新对齐行
+      rowFreeAt = new Array(rowCount).fill(0);
+    }
+    recalcRows();
+    window.addEventListener('resize', recalcRows);
+
+    const MIN_DURATION = 18;       // 最慢 18 秒飘完
+    const MAX_DURATION = 28;       // 最快 28 秒飘完
+    const ROW_STAGGER = 5500;      // 同一行前后两条弹幕最小间隔(ms)
+
+    let danmakuPool = [];  // 所有弹幕文字，用于无限循环
+    let poolCursor = 0;
+    let scheduleTimer = null;
+
+    function getNextFromPool() {
+      if (danmakuPool.length === 0) return null;
+      const text = danmakuPool[poolCursor % danmakuPool.length];
+      poolCursor++;
+      return text;
     }
 
-    function createDanmaku(text, immediate = false) {
-      const row = getRandomRow();
-      occupiedRows.add(row);
-
+    // 在指定行生成一条弹幕 DOM
+    function spawnDanmaku(text, row) {
       const el = document.createElement('div');
       el.className = 'danmaku-item';
       el.textContent = text;
       el.style.color = getRandomColor();
-      el.style.top = (60 + row * ROW_HEIGHT) + 'px';
-      // 跳过标题区域中间部分
-      const topVal = 60 + row * ROW_HEIGHT;
-      if (topVal > window.innerHeight * 0.35 && topVal < window.innerHeight * 0.65) {
-        el.style.opacity = '0.7';
-      }
+      el.style.top = (TOP_MARGIN + row * ROW_HEIGHT) + 'px';
 
-      const duration = 6 + Math.random() * 6; // 6-12秒
+      const duration = MIN_DURATION + Math.random() * (MAX_DURATION - MIN_DURATION);
       el.style.animationDuration = duration + 's';
 
-      if (immediate) {
-        // 已存在的历史弹幕，从随机位置开始
-        el.style.animationDelay = (Math.random() * -duration) + 's';
-      }
-
       danmakuLayer.appendChild(el);
-
-      // 动画结束后清理
-      const cleanupTime = immediate ? (duration * 1000) : (duration * 1000 + 500);
-      setTimeout(() => {
-        el.remove();
-        occupiedRows.delete(row);
-      }, cleanupTime);
+      setTimeout(() => el.remove(), duration * 1000 + 800);
     }
 
-    // 显示 Toast
+    // 调度下一条弹幕：找到最早释放的行，等到它空闲再发射
+    function scheduleNext() {
+      clearTimeout(scheduleTimer);
+
+      const text = getNextFromPool();
+      if (!text) {
+        // 还没有弹幕数据，等会儿再试
+        scheduleTimer = setTimeout(scheduleNext, 2000);
+        return;
+      }
+
+      const now = Date.now();
+      let bestRow = 0;
+      for (let i = 1; i < rowCount; i++) {
+        if (rowFreeAt[i] < rowFreeAt[bestRow]) bestRow = i;
+      }
+
+      const wait = Math.max(0, rowFreeAt[bestRow] - now);
+      scheduleTimer = setTimeout(() => {
+        spawnDanmaku(text, bestRow);
+        rowFreeAt[bestRow] = Date.now() + ROW_STAGGER;
+        scheduleNext(); // 立刻排下一条
+      }, wait);
+    }
+
+    // 立刻弹出一条指定文字（新弹幕用），抢最早空闲行
+    function spawnImmediately(text) {
+      const now = Date.now();
+      let bestRow = 0;
+      for (let i = 1; i < rowCount; i++) {
+        if (rowFreeAt[i] < rowFreeAt[bestRow]) bestRow = i;
+      }
+      const wait = Math.max(0, rowFreeAt[bestRow] - now);
+      setTimeout(() => {
+        spawnDanmaku(text, bestRow);
+        rowFreeAt[bestRow] = Date.now() + ROW_STAGGER;
+      }, wait);
+    }
+
+    // ==================== Toast ====================
     let toastTimer;
     function showToast(msg, bg = '#FF6B6B') {
       clearTimeout(toastTimer);
@@ -299,40 +333,57 @@
       toast.style.color = '#fff';
       toast.style.display = 'block';
       toast.style.animation = 'none';
-      toast.offsetHeight; // reflow
+      toast.offsetHeight;
       toast.style.animation = 'fadeInOut 2.5s ease forwards';
       toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 2500);
     }
 
-    // 发送弹幕
+    // ==================== 发送弹幕 ====================
     function sendDanmaku() {
       const text = input.value.trim();
       if (!text) return showToast('请输入弹幕内容', '#FF8E53');
       if (text.length > 100) return showToast('内容不能超过100字', '#FF8E53');
-
       ws.send(JSON.stringify({ type: 'danmaku', text }));
       input.value = '';
     }
-
     sendBtn.addEventListener('click', sendDanmaku);
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') sendDanmaku();
     });
 
-    // WebSocket 消息
+    // ==================== WebSocket ====================
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
       if (msg.type === 'history') {
-        msg.data.forEach((item) => createDanmaku(item.text, true));
+        const texts = msg.data.map(d => d.text);
+        // 合并：保留 pool 中已有的，追加新的（去重）
+        danmakuPool = [...new Set([...danmakuPool, ...texts])];
+        // 首屏：均匀错开启动，让画面很快就铺满
+        if (firstHistory && danmakuPool.length > 0) {
+          firstHistory = false;
+          const now = Date.now();
+          for (let i = 0; i < Math.min(danmakuPool.length, rowCount); i++) {
+            const row = i % rowCount;
+            const delay = i * 600; // 每条间隔 600ms 发射
+            rowFreeAt[row] = now + delay + ROW_STAGGER;
+            const text = danmakuPool[i % danmakuPool.length];
+            setTimeout(() => spawnDanmaku(text, row), delay);
+          }
+          poolCursor = Math.min(danmakuPool.length, rowCount);
+          // 首屏弹幕发完后启动循环调度
+          const maxFree = Math.max(...rowFreeAt);
+          scheduleTimer = setTimeout(scheduleNext, maxFree - now + 200);
+        }
       } else if (msg.type === 'new_danmaku') {
-        createDanmaku(msg.data.text);
+        // 新弹幕加入池子 + 立刻弹出
+        danmakuPool.push(msg.data.text);
+        spawnImmediately(msg.data.text);
       } else if (msg.type === 'rejected') {
         showToast(msg.message, '#E17055');
       } else if (msg.type === 'error') {
         showToast(msg.message, '#FF8E53');
       }
     };
-
     ws.onclose = () => {
       showToast('连接已断开，请刷新页面', '#E17055');
     };
