@@ -238,40 +238,44 @@
       return colors[Math.floor(Math.random() * colors.length)];
     }
 
-    // 行管理：用「该行何时释放」的时间戳来避免重叠
+    // 行管理
     const TOP_MARGIN = 80;
     const BOTTOM_MARGIN = 120;
     const ROW_HEIGHT = 48;
+    const MAX_CONCURRENT = 6;        // 屏幕上同时最多 6 条
+    const MIN_DURATION = 20;         // 飘过时间 20-26 秒
+    const MAX_DURATION = 26;
+    const LAUNCH_GAP = 3200;         // 两条弹幕发射间隔至少 3.2 秒
+    const ROUND_PAUSE = 4000;        // 一轮播完后暂停 4 秒再开始下一轮
+
     let rowCount;
-    let rowFreeAt; // 每行下次可用的时间戳 (ms)
-    let firstHistory = true; // 首次加载历史弹幕时需要错开启动
+    let rowFreeAt;
 
     function recalcRows() {
       const availH = window.innerHeight - TOP_MARGIN - BOTTOM_MARGIN;
       rowCount = Math.max(6, Math.floor(availH / ROW_HEIGHT));
-      // 每次屏幕变化时重新对齐行
       rowFreeAt = new Array(rowCount).fill(0);
     }
     recalcRows();
     window.addEventListener('resize', recalcRows);
 
-    const MIN_DURATION = 18;       // 最慢 18 秒飘完
-    const MAX_DURATION = 28;       // 最快 28 秒飘完
-    const ROW_STAGGER = 5500;      // 同一行前后两条弹幕最小间隔(ms)
+    let danmakuQueue = [];        // 总弹幕列表（不断增加）
+    let roundQueue = [];          // 本轮播放列表（开轮时快照）
+    let roundIndex = 0;           // 本轮播到第几条
+    let activeCount = 0;          // 屏幕上正在飞的弹幕数
+    let lastLaunchTime = 0;       // 上一条发射时间
+    let roundTimer = null;
 
-    let danmakuPool = [];  // 所有弹幕文字，用于无限循环
-    let poolCursor = 0;
-    let scheduleTimer = null;
-
-    function getNextFromPool() {
-      if (danmakuPool.length === 0) return null;
-      const text = danmakuPool[poolCursor % danmakuPool.length];
-      poolCursor++;
-      return text;
+    function findBestRow() {
+      const now = Date.now();
+      let best = 0;
+      for (let i = 1; i < rowCount; i++) {
+        if (rowFreeAt[i] < rowFreeAt[best]) best = i;
+      }
+      return best;
     }
 
-    // 在指定行生成一条弹幕 DOM
-    function spawnDanmaku(text, row) {
+    function spawnOne(text, row) {
       const el = document.createElement('div');
       el.className = 'danmaku-item';
       el.textContent = text;
@@ -282,32 +286,78 @@
       el.style.animationDuration = duration + 's';
 
       danmakuLayer.appendChild(el);
-      setTimeout(() => el.remove(), duration * 1000 + 800);
+      const ms = duration * 1000;
+      setTimeout(() => {
+        el.remove();
+        activeCount--;
+      }, ms + 500);
     }
 
-    // 调度下一条弹幕：找到最早释放的行，等到它空闲再发射
-    // forceText: 传文字则优先弹出该文字（新弹幕即时响应），否则从池子取
-    function scheduleNext(forceText) {
-      clearTimeout(scheduleTimer);
+    function startRound() {
+      // 开新一轮：用当前总队列做快照，打乱让每轮看起来不一样
+      roundQueue = [...danmakuQueue];
+      shuffle(roundQueue);
+      roundIndex = 0;
+      if (roundQueue.length === 0) {
+        roundTimer = setTimeout(startRound, 2000);
+        return;
+      }
+      launchNext();
+    }
 
-      const text = forceText || getNextFromPool();
-      if (!text) {
-        // 池子还没数据，停掉循环，等有新弹幕时会重新触发
+    function launchNext() {
+      clearTimeout(roundTimer);
+
+      // 本轮播完？
+      if (roundIndex >= roundQueue.length) {
+        if (activeCount > 0) {
+          // 等屏幕上现有的弹幕飞完
+          roundTimer = setTimeout(launchNext, 1000);
+        } else {
+          roundTimer = setTimeout(startRound, ROUND_PAUSE);
+        }
         return;
       }
 
-      const now = Date.now();
-      let bestRow = 0;
-      for (let i = 1; i < rowCount; i++) {
-        if (rowFreeAt[i] < rowFreeAt[bestRow]) bestRow = i;
+      // 屏幕上太密集？
+      if (activeCount >= MAX_CONCURRENT) {
+        roundTimer = setTimeout(launchNext, 600);
+        return;
       }
 
-      const wait = Math.max(0, rowFreeAt[bestRow] - now);
-      scheduleTimer = setTimeout(() => {
-        spawnDanmaku(text, bestRow);
-        rowFreeAt[bestRow] = Date.now() + ROW_STAGGER;
-        scheduleNext(); // 继续排下一条
-      }, wait);
+      // 距离上一条太近？
+      const now = Date.now();
+      const gap = now - lastLaunchTime;
+      if (gap < LAUNCH_GAP) {
+        roundTimer = setTimeout(launchNext, LAUNCH_GAP - gap);
+        return;
+      }
+
+      const row = findBestRow();
+      const rowWait = Math.max(0, rowFreeAt[row] - now);
+      if (rowWait > 2000) {
+        // 所有行都还很忙，稍等
+        roundTimer = setTimeout(launchNext, rowWait);
+        return;
+      }
+
+      // 发射！
+      const text = roundQueue[roundIndex];
+      roundIndex++;
+      activeCount++;
+      lastLaunchTime = Date.now();
+      rowFreeAt[row] = Date.now() + LAUNCH_GAP;
+      spawnOne(text, row);
+
+      // 排下一条
+      roundTimer = setTimeout(launchNext, LAUNCH_GAP);
+    }
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
     }
 
     // ==================== Toast ====================
@@ -342,22 +392,13 @@
       const msg = JSON.parse(event.data);
       if (msg.type === 'history') {
         const texts = msg.data.map(d => d.text);
-        danmakuPool = [...new Set([...danmakuPool, ...texts])];
-        if (firstHistory && danmakuPool.length > 0) {
-          firstHistory = false;
-          // 首屏：多条弹幕错开 800ms 发射，快速铺满画面
-          const burstCount = Math.min(danmakuPool.length, rowCount * 2);
-          for (let i = 0; i < burstCount; i++) {
-            const delay = i * 800;
-            setTimeout(() => {
-              scheduleNext(danmakuPool[i % danmakuPool.length]);
-            }, delay);
-          }
+        if (texts.length > 0) {
+          danmakuQueue = texts;
+          startRound();
         }
       } else if (msg.type === 'new_danmaku') {
-        // 新弹幕加入池子，并立刻排进调度队列
-        danmakuPool.push(msg.data.text);
-        scheduleNext(msg.data.text);
+        // 新弹幕加入总队列，下一轮自动出现
+        danmakuQueue.push(msg.data.text);
       } else if (msg.type === 'rejected') {
         showToast(msg.message, '#E17055');
       } else if (msg.type === 'error') {
