@@ -82,8 +82,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // QR code generation endpoint
 app.get('/api/qrcode', async (req, res) => {
   try {
-    const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
-    const sendUrl = `${baseUrl}/send.html`;
+    const host = req.get('host');
+    const sendUrl = `${req.protocol}://${host}/send.html`;
     const qrDataUrl = await QRCode.toDataURL(sendUrl, {
       width: 200,
       margin: 2,
