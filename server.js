@@ -7,6 +7,7 @@ const path = require('path');
 const QRCode = require('qrcode');
 
 const app = express();
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
@@ -83,7 +84,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/qrcode', async (req, res) => {
   try {
     const host = req.get('host');
-    const sendUrl = `${req.protocol}://${host}/send.html`;
+    const proto = req.get('x-forwarded-proto') || req.protocol;
+    const sendUrl = `${proto}://${host}/send.html`;
     const qrDataUrl = await QRCode.toDataURL(sendUrl, {
       width: 200,
       margin: 2,
