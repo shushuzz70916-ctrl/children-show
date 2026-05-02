@@ -227,7 +227,7 @@
     const bgm = document.getElementById('bgm');
     const musicBtn = document.getElementById('music-btn');
 
-    // ==================== 弹幕循环播放系统 ====================
+    // ==================== 弹幕系统 ====================
     const colors = [
       '#FF6B6B', '#FF8E53', '#FFE66D', '#4ECDC4',
       '#45B7D1', '#96CEB4', '#FFD93D', '#6C5CE7',
@@ -238,138 +238,104 @@
       return colors[Math.floor(Math.random() * colors.length)];
     }
 
-    // 行管理
     const TOP_MARGIN = 80;
-    const BOTTOM_MARGIN = 120;
-    const ROW_HEIGHT = 48;
-    const MAX_CONCURRENT = 6;        // 屏幕上同时最多 6 条
-    const MIN_DURATION = 20;
+    const BOTTOM_MARGIN = 140;
+    const ROW_HEIGHT = 50;
+    const TARGET_MIN = 5;          // 屏幕最少保持 5 条
+    const TARGET_MAX = 8;          // 最多 8 条
+    const MIN_DURATION = 18;       // 飞过时间 18-26s，略有差异
     const MAX_DURATION = 26;
-    const ROUND_PAUSE = 4000;
-
-    // 根据弹幕总数动态调整密度
-    function getMaxConcurrent() {
-      const n = danmakuQueue.length;
-      if (n <= 5) return 6;          // 弹幕很少 → 稀疏
-      if (n <= 15) return 10;
-      if (n <= 30) return 15;
-      return 20;                      // 弹幕很多 → 铺满（上限 20）
-    }
-    function getLaunchGap() {
-      const n = danmakuQueue.length;
-      if (n <= 5) return 3500;        // 间隔 3.5s
-      if (n <= 15) return 2500;
-      if (n <= 30) return 2000;
-      return 1600;                    // 间隔 1.6s，密集但不乱
-    }
+    const LAUNCH_COOLDOWN = 1800;  // 两次发射至少间隔 1.8s
 
     let rowCount;
     let rowFreeAt;
 
     function recalcRows() {
       const availH = window.innerHeight - TOP_MARGIN - BOTTOM_MARGIN;
-      rowCount = Math.max(6, Math.floor(availH / ROW_HEIGHT));
+      rowCount = Math.max(8, Math.floor(availH / ROW_HEIGHT));
       rowFreeAt = new Array(rowCount).fill(0);
     }
     recalcRows();
     window.addEventListener('resize', recalcRows);
 
-    let danmakuQueue = [];
-    let roundQueue = [];
-    let roundIndex = 0;
-    let activeCount = 0;
+    let danmakuHistory = [];   // 所有历史弹幕（无限循环补充用）
+    let historyCursor = 0;
+    let activeCount = 0;       // 当前屏幕上的弹幕数
     let lastLaunchTime = 0;
-    let roundTimer = null;
-    let roundActive = false;   // 是否有轮次在跑
+    let maintainTimer = null;
 
-    function findBestRow() {
+    function findFreeRow() {
       const now = Date.now();
       let best = 0;
       for (let i = 1; i < rowCount; i++) {
         if (rowFreeAt[i] < rowFreeAt[best]) best = i;
       }
-      return best;
+      return { row: best, wait: Math.max(0, rowFreeAt[best] - now) };
     }
 
-    function spawnOne(text, row) {
-      const el = document.createElement('div');
-      el.className = 'danmaku-item';
-      el.textContent = text;
-      el.style.color = getRandomColor();
-      el.style.top = (TOP_MARGIN + row * ROW_HEIGHT) + 'px';
+    function launchOne(text) {
+      const { row, wait } = findFreeRow();
+      // 如果所有行都很忙，选最早释放的等一等
+      const delay = Math.max(0, wait);
 
-      const duration = MIN_DURATION + Math.random() * (MAX_DURATION - MIN_DURATION);
-      el.style.animationDuration = duration + 's';
-
-      danmakuLayer.appendChild(el);
-      const ms = duration * 1000;
       setTimeout(() => {
-        el.remove();
-        activeCount--;
-      }, ms + 500);
+        const el = document.createElement('div');
+        el.className = 'danmaku-item';
+        el.textContent = text;
+        el.style.color = getRandomColor();
+        el.style.top = (TOP_MARGIN + row * ROW_HEIGHT) + 'px';
+
+        const duration = MIN_DURATION + Math.random() * (MAX_DURATION - MIN_DURATION);
+        el.style.animationDuration = duration + 's';
+
+        danmakuLayer.appendChild(el);
+        activeCount++;
+        lastLaunchTime = Date.now();
+        rowFreeAt[row] = Date.now() + LAUNCH_COOLDOWN;
+
+        const ms = duration * 1000;
+        setTimeout(() => {
+          el.remove();
+          activeCount--;
+          // 弹幕消失后检查是否需要补充
+          scheduleMaintain(200);
+        }, ms + 500);
+      }, delay);
     }
 
-    function startRound() {
-      roundQueue = [...danmakuQueue];
-      shuffle(roundQueue);
-      roundIndex = 0;
-      if (roundQueue.length === 0) {
-        roundActive = false;
-        return;
-      }
-      roundActive = true;
-      launchNext();
+    function scheduleMaintain(delay) {
+      clearTimeout(maintainTimer);
+      maintainTimer = setTimeout(maintainScreen, delay);
     }
 
-    function launchNext() {
-      clearTimeout(roundTimer);
+    function maintainScreen() {
+      clearTimeout(maintainTimer);
 
-      if (roundIndex >= roundQueue.length) {
-        if (activeCount > 0) {
-          roundTimer = setTimeout(launchNext, 1000);
-        } else {
-          roundActive = false;
-          roundTimer = setTimeout(startRound, ROUND_PAUSE);
-        }
+      // 已经够了，过会儿再检查
+      if (activeCount >= TARGET_MIN) {
+        maintainTimer = setTimeout(maintainScreen, 2000);
         return;
       }
 
-      const maxConc = getMaxConcurrent();
-      if (activeCount >= maxConc) {
-        roundTimer = setTimeout(launchNext, 500);
+      // 没有历史弹幕可补充
+      if (danmakuHistory.length === 0) {
+        maintainTimer = setTimeout(maintainScreen, 1500);
         return;
       }
 
-      const now = Date.now();
-      const gap = getLaunchGap();
-      const since = now - lastLaunchTime;
-      if (since < gap) {
-        roundTimer = setTimeout(launchNext, gap - since);
+      // 冷却时间内，稍微等等
+      if (Date.now() - lastLaunchTime < LAUNCH_COOLDOWN) {
+        maintainTimer = setTimeout(maintainScreen, LAUNCH_COOLDOWN - (Date.now() - lastLaunchTime));
         return;
       }
 
-      const row = findBestRow();
-      const rowWait = Math.max(0, rowFreeAt[row] - now);
-      if (rowWait > 2000) {
-        roundTimer = setTimeout(launchNext, rowWait);
-        return;
-      }
+      // 从历史弹幕取一条补充
+      const text = danmakuHistory[historyCursor % danmakuHistory.length];
+      historyCursor++;
+      launchOne(text);
 
-      const text = roundQueue[roundIndex];
-      roundIndex++;
-      activeCount++;
-      lastLaunchTime = Date.now();
-      rowFreeAt[row] = Date.now() + gap;
-      spawnOne(text, row);
-
-      roundTimer = setTimeout(launchNext, gap);
-    }
-
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
+      // 如果还不够，继续补
+      maintainTimer = setTimeout(maintainScreen, LAUNCH_COOLDOWN);
     }
 
     // ==================== Toast ====================
@@ -405,15 +371,20 @@
       if (msg.type === 'history') {
         const texts = msg.data.map(d => d.text);
         if (texts.length > 0) {
-          danmakuQueue = texts;
-          startRound();
+          danmakuHistory = texts;
+          // 初始铺满屏幕
+          const burst = Math.min(TARGET_MAX, texts.length);
+          for (let i = 0; i < burst; i++) {
+            setTimeout(() => launchOne(texts[i % texts.length]), i * 600);
+          }
+          historyCursor = burst;
+          // 启动保持逻辑
+          scheduleMaintain(burst * 600 + LAUNCH_COOLDOWN);
         }
       } else if (msg.type === 'new_danmaku') {
-        danmakuQueue.push(msg.data.text);
-        // 如果当前没有轮次在跑（弹幕池之前为空），立刻启动
-        if (!roundActive) {
-          startRound();
-        }
+        // 新弹幕加入历史 + 立刻从右边飞入
+        danmakuHistory.push(msg.data.text);
+        launchOne(msg.data.text);
       } else if (msg.type === 'rejected') {
         showToast(msg.message, '#E17055');
       } else if (msg.type === 'error') {
