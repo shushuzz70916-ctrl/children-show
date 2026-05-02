@@ -167,7 +167,7 @@ children-show/
 
 ### 背景音乐
 
-- 音源：`https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3`
+- 音源：`public/小咪屁屁奇迹.mp3`（本地文件）
 - HTML `<audio loop>` 循环播放，音量 0.3
 - 自动播放受浏览器策略限制，页面首次点击后触发
 - 右上角按钮切换播放/暂停
