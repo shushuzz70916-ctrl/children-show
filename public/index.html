@@ -273,10 +273,17 @@
       return { row: best, wait: Math.max(0, rowFreeAt[best] - now) };
     }
 
-    function launchOne(text) {
-      const { row, wait } = findFreeRow();
-      // 如果所有行都很忙，选最早释放的等一等
-      const delay = Math.max(0, wait);
+    // urgent=true: 用户新弹幕，立即发射不等待；false: 历史补充，走行调度
+    function launchOne(text, urgent) {
+      let row, delay;
+      if (urgent) {
+        row = Math.floor(Math.random() * rowCount);
+        delay = 0;
+      } else {
+        const found = findFreeRow();
+        row = found.row;
+        delay = Math.min(found.wait, 3000); // 最多等 3 秒
+      }
 
       setTimeout(() => {
         const el = document.createElement('div');
@@ -297,7 +304,6 @@
         setTimeout(() => {
           el.remove();
           activeCount--;
-          // 弹幕消失后检查是否需要补充
           scheduleMaintain(200);
         }, ms + 500);
       }, delay);
@@ -359,6 +365,7 @@
       if (text.length > 100) return showToast('内容不能超过100字', '#FF8E53');
       ws.send(JSON.stringify({ type: 'danmaku', text }));
       input.value = '';
+      showToast('审核中...', '#45B7D1');
     }
     sendBtn.addEventListener('click', sendDanmaku);
     input.addEventListener('keydown', (e) => {
@@ -382,9 +389,8 @@
           scheduleMaintain(burst * 600 + LAUNCH_COOLDOWN);
         }
       } else if (msg.type === 'new_danmaku') {
-        // 新弹幕加入历史 + 立刻从右边飞入
         danmakuHistory.push(msg.data.text);
-        launchOne(msg.data.text);
+        launchOne(msg.data.text, true);  // urgent: 用户弹幕立即飞入
       } else if (msg.type === 'rejected') {
         showToast(msg.message, '#E17055');
       } else if (msg.type === 'error') {
