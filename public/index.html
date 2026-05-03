@@ -273,17 +273,28 @@
       return { row: best, wait: Math.max(0, rowFreeAt[best] - now) };
     }
 
-    // urgent=true: 用户新弹幕，立即发射不等待；false: 历史补充，走行调度
-    function launchOne(text, urgent) {
-      let row, delay;
+    // 分配轨道，urgent 优先选空闲行，否则选最早释放的行
+    function pickRow(urgent) {
+      const now = Date.now();
       if (urgent) {
-        row = Math.floor(Math.random() * rowCount);
-        delay = 0;
-      } else {
-        const found = findFreeRow();
-        row = found.row;
-        delay = Math.min(found.wait, 3000); // 最多等 3 秒
+        // 收集当前空闲的行
+        const freeRows = [];
+        for (let i = 0; i < rowCount; i++) {
+          if (rowFreeAt[i] <= now) freeRows.push(i);
+        }
+        if (freeRows.length > 0) {
+          return { row: freeRows[Math.floor(Math.random() * freeRows.length)], delay: 0 };
+        }
       }
+      // 没有空闲行，选最早释放的
+      const found = findFreeRow();
+      return { row: found.row, delay: Math.min(found.wait, 3000) };
+    }
+
+    function launchOne(text, urgent) {
+      const { row, delay } = pickRow(urgent);
+      // 立即锁定轨道，防止其他弹幕分配到同一行
+      rowFreeAt[row] = Math.max(rowFreeAt[row], Date.now() + LAUNCH_COOLDOWN);
 
       setTimeout(() => {
         const el = document.createElement('div');
@@ -298,7 +309,6 @@
         danmakuLayer.appendChild(el);
         activeCount++;
         lastLaunchTime = Date.now();
-        rowFreeAt[row] = Date.now() + LAUNCH_COOLDOWN;
 
         const ms = duration * 1000;
         setTimeout(() => {
