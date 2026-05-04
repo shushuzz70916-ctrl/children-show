@@ -152,8 +152,15 @@
   <script>
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     let ws;
+    let reconnectTimer = null;
 
     function connect() {
+      if (ws) {
+        ws.onopen = null;
+        ws.onmessage = null;
+        ws.onclose = null;
+        ws.onerror = null;
+      }
       ws = new WebSocket(`${protocol}//${location.host}`);
 
       ws.onopen = () => {
@@ -175,7 +182,8 @@
       ws.onclose = () => {
         document.getElementById('status-dot').className = 'status-dot disconnected';
         document.getElementById('status-text').textContent = '连接断开，3秒后重连...';
-        setTimeout(connect, 3000);
+        clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(connect, 3000);
       };
 
       ws.onerror = () => {

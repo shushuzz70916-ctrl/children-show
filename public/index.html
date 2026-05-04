@@ -218,7 +218,8 @@
 
   <script>
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${location.host}`);
+    let ws;
+    let wsReconnectTimer = null;
 
     const danmakuLayer = document.getElementById('danmaku-layer');
     const input = document.getElementById('danmaku-input');
@@ -373,6 +374,9 @@
       const text = input.value.trim();
       if (!text) return showToast('请输入弹幕内容', '#FF8E53');
       if (text.length > 100) return showToast('内容不能超过100字', '#FF8E53');
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        return showToast('连接已断开，正在重连...', '#E17055');
+      }
       ws.send(JSON.stringify({ type: 'danmaku', text }));
       input.value = '';
       showToast('审核中...', '#45B7D1');
@@ -383,33 +387,51 @@
     });
 
     // ==================== WebSocket ====================
-    ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-      if (msg.type === 'history') {
-        const texts = msg.data.map(d => d.text);
-        if (texts.length > 0) {
-          danmakuHistory = texts;
-          // 初始铺满屏幕
-          const burst = Math.min(TARGET_MAX, texts.length);
-          for (let i = 0; i < burst; i++) {
-            setTimeout(() => launchOne(texts[i % texts.length]), i * 600);
-          }
-          historyCursor = burst;
-          // 启动保持逻辑
-          scheduleMaintain(burst * 600 + LAUNCH_COOLDOWN);
-        }
-      } else if (msg.type === 'new_danmaku') {
-        danmakuHistory.push(msg.data.text);
-        launchOne(msg.data.text, true);  // urgent: 用户弹幕立即飞入
-      } else if (msg.type === 'rejected') {
-        showToast(msg.message, '#E17055');
-      } else if (msg.type === 'error') {
-        showToast(msg.message, '#FF8E53');
+    function connectWS() {
+      if (ws) {
+        ws.onopen = null;
+        ws.onmessage = null;
+        ws.onclose = null;
+        ws.onerror = null;
       }
-    };
-    ws.onclose = () => {
-      showToast('连接已断开，请刷新页面', '#E17055');
-    };
+      ws = new WebSocket(`${protocol}//${location.host}`);
+
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'history') {
+          const texts = msg.data.map(d => d.text);
+          if (texts.length > 0) {
+            danmakuHistory = texts;
+            // 初始铺满屏幕
+            const burst = Math.min(TARGET_MAX, texts.length);
+            for (let i = 0; i < burst; i++) {
+              setTimeout(() => launchOne(texts[i % texts.length]), i * 600);
+            }
+            historyCursor = burst;
+            // 启动保持逻辑
+            scheduleMaintain(burst * 600 + LAUNCH_COOLDOWN);
+          }
+        } else if (msg.type === 'new_danmaku') {
+          danmakuHistory.push(msg.data.text);
+          launchOne(msg.data.text, true);  // urgent: 用户弹幕立即飞入
+        } else if (msg.type === 'rejected') {
+          showToast(msg.message, '#E17055');
+        } else if (msg.type === 'error') {
+          showToast(msg.message, '#FF8E53');
+        }
+      };
+
+      ws.onclose = () => {
+        showToast('连接断开，3秒后自动重连...', '#E17055');
+        clearTimeout(wsReconnectTimer);
+        wsReconnectTimer = setTimeout(connectWS, 3000);
+      };
+
+      ws.onerror = () => {
+        // onclose will fire after this, triggering reconnect
+      };
+    }
+    connectWS();
 
     // 背景音乐
     let musicOn = true;
