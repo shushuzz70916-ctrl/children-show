@@ -118,7 +118,7 @@
     /* 输入区 */
     #input-area {
       position: absolute;
-      top: 28px;
+      top: calc(50% + 58px);
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -336,7 +336,7 @@
     const starCanvas = document.getElementById('starfield');
     const starCtx = starCanvas.getContext('2d');
     let stars = [];
-    const STAR_COUNT = 160;
+    const STAR_COUNT = 180;
 
     function resizeStarfield() {
       starCanvas.width = window.innerWidth;
@@ -345,13 +345,15 @@
     function createStars() {
       stars = [];
       for (let i = 0; i < STAR_COUNT; i++) {
+        const isBright = i < 30;
         stars.push({
           x: Math.random() * starCanvas.width,
           y: Math.random() * starCanvas.height,
-          r: Math.random() * 1.8 + 0.4,
-          baseAlpha: Math.random() * 0.5 + 0.15,
-          speed: Math.random() * 0.015 + 0.004,
+          r: isBright ? Math.random() * 2.5 + 1.0 : Math.random() * 2.0 + 0.3,
+          baseAlpha: isBright ? Math.random() * 0.4 + 0.50 : Math.random() * 0.5 + 0.25,
+          speed: Math.random() * 0.03 + 0.008,
           phase: Math.random() * Math.PI * 2,
+          bright: isBright,
         });
       }
     }
@@ -359,12 +361,18 @@
       starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
       const t = Date.now() / 1000;
       for (const s of stars) {
-        const flicker = Math.sin(t * s.speed * 12 + s.phase) * 0.25;
-        const alpha = Math.max(0.05, Math.min(1, s.baseAlpha + flicker));
+        const flicker = Math.sin(t * s.speed * 14 + s.phase) * (s.bright ? 0.45 : 0.35);
+        const alpha = Math.max(0.06, Math.min(1, s.baseAlpha + flicker));
         starCtx.beginPath();
         starCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         starCtx.fillStyle = `rgba(255,255,255,${alpha})`;
         starCtx.fill();
+        if (alpha > 0.55) {
+          starCtx.beginPath();
+          starCtx.arc(s.x, s.y, s.r * 2.5, 0, Math.PI * 2);
+          starCtx.fillStyle = `rgba(255,250,220,${alpha * 0.12})`;
+          starCtx.fill();
+        }
       }
       requestAnimationFrame(animateStars);
     }
