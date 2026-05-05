@@ -80,6 +80,20 @@ async function moderateContent(text) {
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Parse JSON body for admin endpoints
+app.use(express.json());
+
+// Clear all danmaku
+app.post('/api/clear-danmaku', (req, res) => {
+  fs.writeFileSync(DATA_FILE, '[]', 'utf-8');
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ type: 'clear' }));
+    }
+  });
+  res.json({ success: true });
+});
+
 // QR code generation endpoint
 app.get('/api/qrcode', async (req, res) => {
   try {

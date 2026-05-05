@@ -809,6 +809,11 @@
         } else if (msg.type === 'new_danmaku') {
           danmakuHistory.push(msg.data.text);
           launchOne(msg.data.text, true);
+        } else if (msg.type === 'clear') {
+          danmakuHistory = [];
+          historyCursor = 0;
+          document.querySelectorAll('.danmaku-item').forEach(el => el.remove());
+          activeCount = 0;
         } else if (msg.type === 'rejected') {
           showToast(msg.message, '#E17055');
         } else if (msg.type === 'error') {

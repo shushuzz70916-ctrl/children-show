@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>发送弹幕 - iSTART儿童艺术展-11：07PM</title>
+  <title>发送弹幕 - 儿童艺术展-11：07pm</title>
   <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Nunito:wght@400;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -223,14 +223,14 @@
 <body>
 
   <div class="card">
-    <h1>iSTART儿童艺术展-11：07PM</h1>
+    <h1>儿童艺术展-11：07pm</h1>
     <p class="subtitle">发送弹幕，出现在大屏幕上</p>
 
     <div class="input-group">
       <input id="danmaku-input" type="text" maxlength="100"
-             placeholder="输入弹幕内容..." autofocus>
+             placeholder="输入弹幕，一起互动吧~" autofocus>
       <span class="char-count" id="char-count">0/100</span>
-      <button id="send-btn">发 送</button>
+      <button id="send-btn">发送</button>
     </div>
 
     <div id="toast"></div>
@@ -268,6 +268,8 @@
         const msg = JSON.parse(event.data);
         if (msg.type === 'new_danmaku') {
           showToast('发送成功', '#4ECDC4');
+        } else if (msg.type === 'clear') {
+          showToast('弹幕已清除', '#4ECDC4');
         } else if (msg.type === 'rejected') {
           showToast(msg.message, '#E17055');
         } else if (msg.type === 'error') {
