@@ -81,7 +81,17 @@
       "Bash(cat data/victimization.json)",
       "Bash(ed -s researchers.html)",
       "Bash(brew install *)",
-      "WebFetch(domain:karenbluth.com)"
+      "WebFetch(domain:karenbluth.com)",
+      "WebFetch(domain:children-show-danmaku.onrender.com)",
+      "mcp__chrome-devtools__fill",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__list_network_requests",
+      "Bash(brew tap *)",
+      "Bash(npm search *)",
+      "Bash(node *)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(grep -E '\\\\.\\(jpg|png\\)$')",
+      "Bash(grep '\\\\.png$')"
     ]
   }
 }
