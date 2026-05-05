@@ -412,23 +412,6 @@
       filter: drop-shadow(0 6px 20px rgba(0,0,0,0.45));
     }
 
-    @keyframes float-art {
-      0%   { transform: translateX(-320px) translateY(0) rotate(var(--rot)); }
-      20%  { transform: translateX(20vw) translateY(-16px) rotate(var(--rot)); }
-      40%  { transform: translateX(40vw) translateY(8px) rotate(var(--rot)); }
-      60%  { transform: translateX(60vw) translateY(-12px) rotate(var(--rot)); }
-      80%  { transform: translateX(80vw) translateY(5px) rotate(var(--rot)); }
-      100% { transform: translateX(calc(100vw + 320px)) translateY(0) rotate(var(--rot)); }
-    }
-
-    @keyframes float-art-reverse {
-      0%   { transform: translateX(calc(100vw + 320px)) translateY(0) rotate(var(--rot)); }
-      20%  { transform: translateX(80vw) translateY(-12px) rotate(var(--rot)); }
-      40%  { transform: translateX(60vw) translateY(6px) rotate(var(--rot)); }
-      60%  { transform: translateX(40vw) translateY(-10px) rotate(var(--rot)); }
-      80%  { transform: translateX(20vw) translateY(4px) rotate(var(--rot)); }
-      100% { transform: translateX(-320px) translateY(0) rotate(var(--rot)); }
-    }
   </style>
 </head>
 <body>
@@ -893,57 +876,149 @@
       updateMusicUI();
     });
 
-    // ==================== 浮动儿童画廊 ====================
+    // ==================== 浮动儿童画廊（物理碰撞版）====================
     function initFloatingGallery() {
       const layer = document.getElementById('gallery-layer');
       const arts = [
-        { src: 'assets/变色龙.png', color: 'var(--pink)',    size: 200, top: '5%',  duration: 38, reverse: false },
-        { src: 'assets/鸟巢.png',   color: 'var(--coral)',   size: 190, top: '24%', duration: 46, reverse: true  },
-        { src: 'assets/风.png',     color: 'var(--yellow)',  size: 170, top: '38%', duration: 34, reverse: false },
-        { src: 'assets/乌隼.png',   color: 'var(--mint)',    size: 185, top: '58%', duration: 52, reverse: true  },
-        { src: 'assets/月亮.png',   color: 'var(--lavender)',size: 175, top: '70%', duration: 40, reverse: false },
-        { src: 'assets/空气.png',   color: 'var(--purple)',  size: 195, top: '80%', duration: 44, reverse: true  },
-        { src: 'assets/大树.png',   color: 'var(--teal)',    size: 180, top: '90%', duration: 36, reverse: false },
+        { src: 'assets/变色龙.png', color: 'var(--pink)',     size: 150 },
+        { src: 'assets/大树.png',   color: 'var(--teal)',     size: 145 },
+        { src: 'assets/鸟巢.png',   color: 'var(--coral)',    size: 145 },
+        { src: 'assets/风.png',     color: 'var(--yellow)',   size: 135 },
+        { src: 'assets/乌隼.png',   color: 'var(--mint)',     size: 150 },
+        { src: 'assets/月亮.png',   color: 'var(--lavender)', size: 140 },
+        { src: 'assets/空气.png',   color: 'var(--purple)',   size: 155 },
       ];
+
+      let W = window.innerWidth;
+      let H = window.innerHeight;
+      const items = [];
+
+      function rand(min, max) { return min + Math.random() * (max - min); }
+
+      function findSafePos(width, height, existing) {
+        for (let attempt = 0; attempt < 200; attempt++) {
+          const x = rand(20, W - width - 20);
+          const y = rand(20, H - height - 20);
+          let ok = true;
+          for (const o of existing) {
+            if (x < o.x + o.w && x + width > o.x &&
+                y < o.y + o.h && y + height > o.y) {
+              ok = false; break;
+            }
+          }
+          if (ok) return { x, y };
+        }
+        return { x: rand(20, W - width - 20), y: rand(20, H - height - 20) };
+      }
 
       arts.forEach((art, i) => {
         const frame = document.createElement('div');
         frame.className = 'art-frame';
-        frame.style.borderColor = art.color;
         frame.style.width = art.size + 'px';
-        frame.style.top = art.top;
-        frame.style.animationName = 'float-art';
-        frame.style.animationTimingFunction = 'linear';
-        frame.style.animationIterationCount = 'infinite';
-        const animName = art.reverse ? 'float-art-reverse' : 'float-art';
-        frame.style.animationName = animName;
-        frame.style.animationTimingFunction = 'linear';
-        frame.style.animationIterationCount = 'infinite';
-        frame.style.animationDuration = art.duration + 's';
-        // 负延迟让页面一打开就有画分布在屏幕上，反向动画用独立偏移避免碰撞
-        const stagger = 13;
-        const delayOffset = art.reverse ? stagger * 0.5 : 0;
-        const delay = -(((i * stagger + delayOffset) % art.duration));
-        frame.style.animationDelay = delay + 's';
+        frame.style.willChange = 'transform';
 
-        // 随机轻微旋转，每幅画有独特的手绘倾斜感
-        const rot = (Math.random() - 0.5) * 7;
-        frame.style.setProperty('--rot', rot + 'deg');
+        const rot = [2, -3, 4, -2, 3, -4, 1][i];
 
         const img = document.createElement('img');
         img.src = art.src;
         img.alt = '';
         img.loading = 'lazy';
-        // 透明PNG不用blend mode；大树白底用multiply，鸟巢黑底用screen
-        if (art.src.includes('大树')) {
-          img.style.mixBlendMode = 'multiply';
-        } else if (art.src.includes('鸟巢')) {
-          img.style.mixBlendMode = 'screen';
-        }
+        if (art.src.includes('大树')) img.style.mixBlendMode = 'multiply';
+        else if (art.src.includes('鸟巢')) img.style.mixBlendMode = 'screen';
         frame.appendChild(img);
-
         layer.appendChild(frame);
+
+        const item = {
+          el: frame,
+          w: art.size,
+          h: art.size,
+          x: 0, y: 0,
+          vx: rand(0.25, 0.55) * (Math.random() < 0.5 ? 1 : -1),
+          vy: rand(0.2, 0.45) * (Math.random() < 0.5 ? 1 : -1),
+          rot: rot,
+          floatPhase: rand(0, Math.PI * 2),
+        };
+
+        img.onload = () => {
+          const ratio = img.naturalHeight / img.naturalWidth;
+          item.h = art.size * ratio;
+          const pos = findSafePos(item.w, item.h, items);
+          item.x = pos.x;
+          item.y = pos.y;
+        };
+
+        // 图片未加载前先用正方形估算
+        const pos = findSafePos(item.w, item.h, items);
+        item.x = pos.x;
+        item.y = pos.y;
+        items.push(item);
       });
+
+      function rectsOverlap(a, b) {
+        return a.x < b.x + b.w && a.x + a.w > b.x &&
+               a.y < b.y + b.h && a.y + a.h > b.y;
+      }
+
+      function resolveCollision(a, b) {
+        const overlapX = Math.min(a.x + a.w - b.x, b.x + b.w - a.x);
+        const overlapY = Math.min(a.y + a.h - b.y, b.y + b.h - a.y);
+
+        if (overlapX < overlapY) {
+          // 水平碰撞
+          const push = overlapX * 0.52;
+          if (a.x < b.x) { a.x -= push; b.x += push; }
+          else           { a.x += push; b.x -= push; }
+          a.vx = -a.vx;
+          b.vx = -b.vx;
+        } else {
+          // 垂直碰撞
+          const push = overlapY * 0.52;
+          if (a.y < b.y) { a.y -= push; b.y += push; }
+          else           { a.y += push; b.y -= push; }
+          a.vy = -a.vy;
+          b.vy = -b.vy;
+        }
+      }
+
+      let lastT = performance.now();
+      function tick(now) {
+        const dt = Math.min((now - lastT) / 16.67, 3); // 以60fps为基准，限制最大步长
+        lastT = now;
+
+        W = window.innerWidth;
+        H = window.innerHeight;
+
+        for (const item of items) {
+          // 正弦浮动叠加在 y 上
+          const floatY = Math.sin(now * 0.0008 + item.floatPhase) * 0.35 * dt;
+
+          item.x += item.vx * dt;
+          item.y += (item.vy + floatY) * dt;
+
+          // 边界反弹（留一点边距）
+          if (item.x < 10) { item.x = 10; item.vx = Math.abs(item.vx); }
+          if (item.x + item.w > W - 10) { item.x = W - 10 - item.w; item.vx = -Math.abs(item.vx); }
+          if (item.y < 10) { item.y = 10; item.vy = Math.abs(item.vy); }
+          if (item.y + item.h > H - 10) { item.y = H - 10 - item.h; item.vy = -Math.abs(item.vy); }
+        }
+
+        // 碰撞检测与响应
+        for (let i = 0; i < items.length; i++) {
+          for (let j = i + 1; j < items.length; j++) {
+            if (rectsOverlap(items[i], items[j])) {
+              resolveCollision(items[i], items[j]);
+            }
+          }
+        }
+
+        // 应用 transform
+        for (const item of items) {
+          item.el.style.transform = `translate3d(${item.x.toFixed(1)}px, ${item.y.toFixed(1)}px, 0) rotate(${item.rot}deg)`;
+        }
+
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
     }
     initFloatingGallery();
 
