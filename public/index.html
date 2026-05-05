@@ -897,13 +897,13 @@
     function initFloatingGallery() {
       const layer = document.getElementById('gallery-layer');
       const arts = [
-        { src: 'assets/变色龙.jpg', color: 'var(--pink)',    size: 200, top: '5%',  duration: 38, reverse: false },
-        { src: 'assets/鸟巢.svg',   color: 'var(--coral)',   size: 190, top: '24%', duration: 46, reverse: true  },
-        { src: 'assets/风.jpg',     color: 'var(--yellow)',  size: 170, top: '38%', duration: 34, reverse: false },
-        { src: 'assets/乌隼.jpg',   color: 'var(--mint)',    size: 185, top: '58%', duration: 52, reverse: true  },
-        { src: 'assets/月亮.svg',   color: 'var(--lavender)',size: 175, top: '70%', duration: 40, reverse: false },
-        { src: 'assets/空气.jpg',   color: 'var(--purple)',  size: 195, top: '80%', duration: 44, reverse: true  },
-        { src: 'assets/大树.svg',   color: 'var(--teal)',    size: 180, top: '90%', duration: 36, reverse: false },
+        { src: 'assets/变色龙.png', color: 'var(--pink)',    size: 200, top: '5%',  duration: 38, reverse: false },
+        { src: 'assets/鸟巢.png',   color: 'var(--coral)',   size: 190, top: '24%', duration: 46, reverse: true  },
+        { src: 'assets/风.png',     color: 'var(--yellow)',  size: 170, top: '38%', duration: 34, reverse: false },
+        { src: 'assets/乌隼.png',   color: 'var(--mint)',    size: 185, top: '58%', duration: 52, reverse: true  },
+        { src: 'assets/月亮.png',   color: 'var(--lavender)',size: 175, top: '70%', duration: 40, reverse: false },
+        { src: 'assets/空气.png',   color: 'var(--purple)',  size: 195, top: '80%', duration: 44, reverse: true  },
+        { src: 'assets/大树.png',   color: 'var(--teal)',    size: 180, top: '90%', duration: 36, reverse: false },
       ];
 
       arts.forEach((art, i) => {
@@ -934,10 +934,10 @@
         img.src = art.src;
         img.alt = '';
         img.loading = 'lazy';
-        // 位图去背景：白底用 multiply，黑底鸟巢用 screen，SVG 不用
-        if (art.src.endsWith('.jpg')) {
+        // 透明PNG不用blend mode；大树白底用multiply，鸟巢黑底用screen
+        if (art.src.includes('大树')) {
           img.style.mixBlendMode = 'multiply';
-        } else if (art.src.endsWith('.png')) {
+        } else if (art.src.includes('鸟巢')) {
           img.style.mixBlendMode = 'screen';
         }
         frame.appendChild(img);
