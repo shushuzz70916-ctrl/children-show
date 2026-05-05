@@ -4,21 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>iSTART儿童艺术展-11：07PM - 弹幕互动</title>
-  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Nunito:wght@400;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /* ========== Memphis Design Tokens ========== */
+    :root {
+      --pink: #FF71CE;
+      --yellow: #FFCE5C;
+      --teal: #86CCCA;
+      --purple: #8B6BAE;
+      --coral: #FF6B6B;
+      --mint: #7ECB9A;
+      --lavender: #B8A9E8;
+      --bg-deep: #1a1040;
+      --bg-mid: #241a4e;
+      --border-width: 3px;
+      --shadow-offset: 6px;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       width: 100vw;
       height: 100vh;
       overflow: hidden;
-      background: linear-gradient(160deg, #0a0a1a 0%, #12102a 30%, #1a1040 60%, #0f0f2a 100%);
-      font-family: 'Nunito', 'ZCOOL KuaiLe', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(150deg, #1a1040 0%, #1e1650 35%, #1a1040 65%, #150d35 100%);
+      font-family: 'Nunito', 'Fredoka', 'PingFang SC', 'Microsoft YaHei', sans-serif;
       position: relative;
     }
 
-    /* 星空画布 */
-    #starfield {
+    /* ========== 几何图形背景画布 ========== */
+    #geofield {
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
@@ -26,7 +41,7 @@
       pointer-events: none;
     }
 
-    /* 满月 */
+    /* ========== 满月 ========== */
     #moon {
       position: absolute;
       top: 6%;
@@ -34,23 +49,23 @@
       width: 200px;
       height: 200px;
       border-radius: 50%;
-      background: radial-gradient(circle at 42% 42%, rgba(255,240,180,0.98) 0%, rgba(255,225,130,0.88) 35%, rgba(255,205,85,0.65) 65%, rgba(240,185,45,0.28) 100%);
+      background: radial-gradient(circle at 42% 42%, rgba(255,235,180,0.98) 0%, rgba(255,210,120,0.88) 35%, rgba(255,185,80,0.55) 65%, rgba(240,160,50,0.22) 100%);
       box-shadow:
-        0 0 50px rgba(255,220,65,0.58),
-        0 0 120px rgba(255,200,40,0.38),
-        0 0 220px rgba(255,180,25,0.18),
-        0 0 380px rgba(255,185,30,0.10),
-        0 0 600px rgba(255,195,35,0.05);
+        0 0 50px rgba(255, 215, 100, 0.55),
+        0 0 120px rgba(255, 190, 60, 0.35),
+        0 0 220px rgba(255, 170, 30, 0.18),
+        0 0 380px rgba(255, 170, 30, 0.10),
+        0 0 600px rgba(255, 170, 30, 0.05);
       z-index: 1;
       pointer-events: none;
       animation: moonGlow 8s ease-in-out infinite;
     }
     @keyframes moonGlow {
-      0%, 100% { box-shadow: 0 0 50px rgba(255,220,65,0.58), 0 0 120px rgba(255,200,40,0.38), 0 0 220px rgba(255,180,25,0.18), 0 0 380px rgba(255,185,30,0.10), 0 0 600px rgba(255,195,35,0.05); }
-      50% { box-shadow: 0 0 70px rgba(255,220,65,0.68), 0 0 150px rgba(255,200,40,0.48), 0 0 260px rgba(255,180,25,0.26), 0 0 420px rgba(255,185,30,0.15), 0 0 680px rgba(255,195,35,0.08); }
+      0%, 100% { box-shadow: 0 0 50px rgba(255, 215, 100, 0.55), 0 0 120px rgba(255, 190, 60, 0.35), 0 0 220px rgba(255, 170, 30, 0.18), 0 0 380px rgba(255, 170, 30, 0.10), 0 0 600px rgba(255, 170, 30, 0.05); }
+      50% { box-shadow: 0 0 70px rgba(255, 215, 100, 0.68), 0 0 150px rgba(255, 190, 60, 0.48), 0 0 260px rgba(255, 170, 30, 0.26), 0 0 420px rgba(255, 170, 30, 0.15), 0 0 680px rgba(255, 170, 30, 0.08); }
     }
 
-    /* 弹幕层 */
+    /* ========== 弹幕层 ========== */
     #danmaku-layer {
       position: absolute;
       top: 0; left: 0;
@@ -64,8 +79,10 @@
       white-space: nowrap;
       font-size: 28px;
       font-weight: 700;
-      font-family: 'Nunito', 'ZCOOL KuaiLe', 'PingFang SC', sans-serif;
-      text-shadow: 0 0 18px currentColor;
+      font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
+      text-shadow:
+        0 0 12px currentColor,
+        2px 2px 0 rgba(0,0,0,0.3);
       animation: scroll-left linear forwards;
       pointer-events: none;
       letter-spacing: 0.02em;
@@ -75,7 +92,7 @@
       100% { transform: translateX(-100%); }
     }
 
-    /* 标题 */
+    /* ========== 标题 ========== */
     #title-area {
       position: absolute;
       top: 50%; left: 50%;
@@ -86,36 +103,33 @@
     }
     #title-area h1 {
       font-family: 'ZCOOL KuaiLe', 'PingFang SC', sans-serif;
-      font-size: 68px;
+      font-size: 78px;
       white-space: nowrap;
-      letter-spacing: 0.04em;
-      background: linear-gradient(135deg, #FF9A9A 0%, #FFE88D 50%, #FFC060 100%);
-      background-size: 200% 200%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      -webkit-text-stroke: 1.5px rgba(10,10,26,0.25);
-      filter: drop-shadow(0 0 60px rgba(255,170,80,0.55)) drop-shadow(0 0 130px rgba(255,190,60,0.35));
-      animation: titleFloat 5s ease-in-out infinite, titleShimmer 6s ease-in-out infinite;
+      letter-spacing: 0.12em;
+      color: #FFF8E7;
+      text-shadow:
+        0 0 30px rgba(255, 215, 100, 0.55),
+        0 0 80px rgba(255, 190, 60, 0.35),
+        0 0 160px rgba(255, 170, 30, 0.18),
+        0 4px 12px rgba(0,0,0,0.45);
+      -webkit-text-stroke: 1px rgba(255, 220, 160, 0.25);
+      animation: titleFloat 5s ease-in-out infinite;
     }
     @keyframes titleFloat {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-12px); }
     }
-    @keyframes titleShimmer {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
+
+    /* ========== 孟菲斯面板通用 ========== */
+    .memphis-panel {
+      background: rgba(26, 16, 64, 0.92);
+      border: var(--border-width) solid rgba(255,255,255,0.85);
+      box-shadow:
+        var(--shadow-offset) var(--shadow-offset) 0 var(--purple),
+        0 0 30px rgba(139,107,174,0.25);
     }
 
-    /* 玻璃面板通用 */
-    .glass-panel {
-      background: rgba(255,255,255,0.06);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-
-    /* 输入区 */
+    /* ========== 输入区 ========== */
     #input-area {
       position: absolute;
       top: calc(50% + 58px);
@@ -124,71 +138,75 @@
       display: flex;
       gap: 10px;
       z-index: 20;
-      padding: 8px;
-      border-radius: 40px;
-      background: rgba(255,255,255,0.06);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      padding: 10px;
+      border-radius: 20px;
+      background: rgba(26, 16, 64, 0.92);
+      border: var(--border-width) solid rgba(255,255,255,0.85);
+      box-shadow:
+        var(--shadow-offset) var(--shadow-offset) 0 var(--teal),
+        0 0 30px rgba(134,204,202,0.2);
     }
     #input-area input {
       width: 340px;
       padding: 12px 22px;
       font-size: 18px;
-      border: none;
-      border-radius: 32px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 14px;
       outline: none;
-      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
       font-weight: 600;
-      background: rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.1);
       color: #fff;
-      transition: background 0.25s, box-shadow 0.25s;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
     }
     #input-area input::placeholder {
       color: rgba(255,255,255,0.35);
       font-weight: 400;
     }
     #input-area input:focus {
+      border-color: var(--pink);
       background: rgba(255,255,255,0.16);
-      box-shadow: 0 0 0 3px rgba(255,123,123,0.25);
+      box-shadow: 0 0 0 4px rgba(255,113,206,0.2);
     }
     #input-area button {
       padding: 12px 26px;
       font-size: 18px;
-      border: none;
-      border-radius: 32px;
-      background: linear-gradient(135deg, #FF7B7B, #FF8E73);
+      border: var(--border-width) solid rgba(255,255,255,0.9);
+      border-radius: 14px;
+      background: var(--pink);
       color: #fff;
       cursor: pointer;
-      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-family: 'Fredoka', 'Nunito', 'PingFang SC', sans-serif;
       font-weight: 700;
-      letter-spacing: 0.03em;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 15px rgba(255,123,123,0.3);
+      letter-spacing: 0.04em;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+      box-shadow: 4px 4px 0 var(--yellow);
     }
     #input-area button:hover {
-      transform: scale(1.04);
-      box-shadow: 0 6px 24px rgba(255,123,123,0.45);
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 var(--yellow);
+      background: #FF8BD8;
     }
-    #input-area button:active { transform: scale(0.96); }
+    #input-area button:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--yellow);
+    }
 
-    /* Toast */
+    /* ========== Toast ========== */
     #toast {
       position: absolute;
       top: 110px;
       left: 50%;
       transform: translateX(-50%);
       padding: 12px 28px;
-      border-radius: 28px;
+      border-radius: 14px;
       font-size: 16px;
-      font-family: 'Nunito', 'PingFang SC', sans-serif;
-      font-weight: 600;
+      font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
+      font-weight: 700;
       z-index: 30;
       display: none;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.10);
+      border: var(--border-width) solid rgba(255,255,255,0.85);
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
       animation: fadeInOut 2.5s ease forwards;
     }
     @keyframes fadeInOut {
@@ -198,70 +216,167 @@
       100% { opacity: 0; }
     }
 
-    /* 二维码卡片 */
+    /* ========== 二维码卡片 ========== */
     #qr-area {
       position: absolute;
       bottom: 28px;
       right: 28px;
-      border-radius: 24px;
+      border-radius: 20px;
       padding: 20px 20px 14px;
       text-align: center;
       z-index: 20;
-      background: rgba(255,255,255,0.07);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      background: rgba(26, 16, 64, 0.92);
+      border: var(--border-width) solid rgba(255,255,255,0.85);
+      box-shadow:
+        calc(-1 * var(--shadow-offset)) var(--shadow-offset) 0 var(--pink),
+        0 0 30px rgba(255,113,206,0.2);
     }
     #qr-area img {
       width: 130px;
       height: 130px;
       display: block;
-      border-radius: 12px;
+      border-radius: 10px;
       background: #fff;
       padding: 4px;
+      border: 2px solid var(--purple);
     }
     #qr-area p {
       margin-top: 10px;
       font-size: 13px;
-      color: rgba(255,255,255,0.65);
-      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      color: rgba(255,255,255,0.8);
+      font-family: 'Fredoka', 'Nunito', 'PingFang SC', sans-serif;
       font-weight: 600;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.03em;
     }
 
-    /* 音乐开关 */
+    /* ========== 音乐开关 ========== */
     #music-btn {
       position: absolute;
       top: 36px;
       right: 28px;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.07);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      border: var(--border-width) solid rgba(255,255,255,0.85);
+      background: rgba(26, 16, 64, 0.92);
       cursor: pointer;
       z-index: 20;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+      box-shadow: 4px 4px 0 var(--coral);
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: rgba(255,255,255,0.85);
+      color: rgba(255,255,255,0.9);
     }
     #music-btn:hover {
-      transform: scale(1.1);
-      background: rgba(255,255,255,0.12);
-      box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 var(--coral);
+    }
+    #music-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--coral);
     }
     #music-btn svg {
       width: 20px;
       height: 20px;
     }
 
-    /* 链接提示 */
+    /* ========== 装饰性几何元素 ========== */
+    /* 右上角三角形 */
+    .geo-triangle-tr {
+      position: absolute;
+      top: 3%;
+      right: 6%;
+      width: 80px;
+      height: 80px;
+      background: var(--teal);
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      opacity: 0.7;
+      z-index: 1;
+      pointer-events: none;
+      animation: geoFloat1 7s ease-in-out infinite;
+      border: none;
+    }
+    /* 左下角菱形 */
+    .geo-diamond-bl {
+      position: absolute;
+      bottom: 15%;
+      left: 5%;
+      width: 50px;
+      height: 50px;
+      background: var(--pink);
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      opacity: 0.65;
+      z-index: 1;
+      pointer-events: none;
+      animation: geoFloat2 8s ease-in-out infinite;
+    }
+    /* 中左波浪线 */
+    .geo-squiggle-ml {
+      position: absolute;
+      top: 35%;
+      left: 3%;
+      width: 120px;
+      height: 30px;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.5;
+      animation: geoFloat3 9s ease-in-out infinite;
+    }
+    /* 右中小圆点组 */
+    .geo-dots-mr {
+      position: absolute;
+      top: 40%;
+      right: 4%;
+      width: 60px;
+      height: 80px;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.55;
+      animation: geoFloat1 6s ease-in-out infinite;
+    }
+    /* 底部中三角形 */
+    .geo-triangle-bc {
+      position: absolute;
+      bottom: 8%;
+      left: 50%;
+      width: 45px;
+      height: 45px;
+      background: var(--coral);
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      opacity: 0.6;
+      z-index: 1;
+      pointer-events: none;
+      animation: geoFloat2 7.5s ease-in-out infinite;
+    }
+    @keyframes geoFloat1 {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      33% { transform: translateY(-12px) rotate(5deg); }
+      66% { transform: translateY(8px) rotate(-3deg); }
+    }
+    @keyframes geoFloat2 {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(8deg); }
+    }
+    @keyframes geoFloat3 {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* ========== 波点背景图案层 ========== */
+    #polka-bg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.06;
+      background-image:
+        radial-gradient(circle, #fff 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* ========== 链接提示 ========== */
     #link-hint {
       position: absolute;
       bottom: 28px;
@@ -269,19 +384,90 @@
       color: rgba(255,255,255,0.45);
       font-size: 13px;
       z-index: 20;
-      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
       font-weight: 600;
       pointer-events: none;
+    }
+
+    /* ========== 浮动儿童画廊 ========== */
+    #gallery-layer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 2;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .art-frame {
+      position: absolute;
+      background: rgba(255,255,255,0.92);
+      padding: 14px;
+      border: var(--border-width) solid;
+      /* 不规则圆角模拟手绘裁剪感 */
+      border-radius: 18px 14px 20px 16px;
+      box-shadow: var(--shadow-offset) var(--shadow-offset) 0 rgba(0,0,0,0.2);
+      opacity: 0.58;
+      will-change: transform;
+    }
+
+    .art-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 4px;
+    }
+
+    @keyframes float-art {
+      0%   { transform: translateX(-320px) translateY(0) rotate(var(--rot)); }
+      20%  { transform: translateX(20vw) translateY(-16px) rotate(var(--rot)); }
+      40%  { transform: translateX(40vw) translateY(8px) rotate(var(--rot)); }
+      60%  { transform: translateX(60vw) translateY(-12px) rotate(var(--rot)); }
+      80%  { transform: translateX(80vw) translateY(5px) rotate(var(--rot)); }
+      100% { transform: translateX(calc(100vw + 320px)) translateY(0) rotate(var(--rot)); }
+    }
+
+    @keyframes float-art-reverse {
+      0%   { transform: translateX(calc(100vw + 320px)) translateY(0) rotate(var(--rot)); }
+      20%  { transform: translateX(80vw) translateY(-12px) rotate(var(--rot)); }
+      40%  { transform: translateX(60vw) translateY(6px) rotate(var(--rot)); }
+      60%  { transform: translateX(40vw) translateY(-10px) rotate(var(--rot)); }
+      80%  { transform: translateX(20vw) translateY(4px) rotate(var(--rot)); }
+      100% { transform: translateX(-320px) translateY(0) rotate(var(--rot)); }
     }
   </style>
 </head>
 <body>
 
-  <!-- 星空背景 -->
-  <canvas id="starfield"></canvas>
+  <!-- 波点背景 -->
+  <div id="polka-bg"></div>
 
-  <!-- 满月 -->
+  <!-- 浮动儿童画廊 -->
+  <div id="gallery-layer"></div>
+
+  <!-- 几何图形背景 -->
+  <canvas id="geofield"></canvas>
+
+  <!-- 孟菲斯太阳 -->
   <div id="moon"></div>
+
+  <!-- 装饰几何元素 -->
+  <div class="geo-triangle-tr"></div>
+  <div class="geo-diamond-bl"></div>
+  <svg class="geo-squiggle-ml" viewBox="0 0 120 30" fill="none">
+    <path d="M0,15 Q15,2 30,15 Q45,28 60,15 Q75,2 90,15 Q105,28 120,15"
+          stroke="#FFCE5C" stroke-width="3" stroke-linecap="round"/>
+  </svg>
+  <svg class="geo-dots-mr" viewBox="0 0 60 80">
+    <circle cx="15" cy="12" r="5" fill="#FF71CE"/>
+    <circle cx="35" cy="12" r="5" fill="#FF71CE"/>
+    <circle cx="15" cy="32" r="5" fill="#86CCCA"/>
+    <circle cx="35" cy="32" r="5" fill="#86CCCA"/>
+    <circle cx="15" cy="52" r="5" fill="#FFCE5C"/>
+    <circle cx="35" cy="52" r="5" fill="#FFCE5C"/>
+    <circle cx="25" cy="72" r="5" fill="#FF6B6B"/>
+  </svg>
+  <div class="geo-triangle-bc"></div>
 
   <!-- 背景音乐 -->
   <audio id="bgm" loop preload="auto"
@@ -293,7 +479,7 @@
 
   <!-- 标题 -->
   <div id="title-area">
-    <h1>iSTART儿童艺术展-11：07PM</h1>
+    <h1>儿童艺术展-11：07pm</h1>
   </div>
 
   <!-- 输入框 -->
@@ -314,12 +500,12 @@
 
   <!-- 音乐开关 -->
   <button id="music-btn" title="音乐开关">
-    <svg id="music-icon-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg id="music-icon-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
       <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
       <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
     </svg>
-    <svg id="music-icon-off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+    <svg id="music-icon-off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
       <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
       <line x1="23" y1="9" x2="17" y2="15"></line>
       <line x1="17" y1="9" x2="23" y2="15"></line>
@@ -332,56 +518,129 @@
   </div>
 
   <script>
-    // ==================== 星空背景 ====================
-    const starCanvas = document.getElementById('starfield');
-    const starCtx = starCanvas.getContext('2d');
-    let stars = [];
-    const STAR_COUNT = 180;
+    // ==================== 孟菲斯几何背景 ====================
+    const geofield = document.getElementById('geofield');
+    const geoCtx = geofield.getContext('2d');
+    let geoShapes = [];
+    const SHAPE_COUNT = 100;
 
-    function resizeStarfield() {
-      starCanvas.width = window.innerWidth;
-      starCanvas.height = window.innerHeight;
+    const memphisColors = [
+      '#FF71CE', '#FFCE5C', '#86CCCA', '#8B6BAE',
+      '#FF6B6B', '#7ECB9A', '#B8A9E8', '#FFB347',
+    ];
+
+    function resizeGeofield() {
+      geofield.width = window.innerWidth;
+      geofield.height = window.innerHeight;
     }
-    function createStars() {
-      stars = [];
-      for (let i = 0; i < STAR_COUNT; i++) {
-        const isBright = i < 30;
-        stars.push({
-          x: Math.random() * starCanvas.width,
-          y: Math.random() * starCanvas.height,
-          r: isBright ? Math.random() * 2.5 + 1.0 : Math.random() * 2.0 + 0.3,
-          baseAlpha: isBright ? Math.random() * 0.4 + 0.50 : Math.random() * 0.5 + 0.25,
-          speed: Math.random() * 0.03 + 0.008,
-          phase: Math.random() * Math.PI * 2,
-          bright: isBright,
+
+    function drawTriangle(ctx, cx, cy, size, rotation) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(rotation);
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.lineTo(-size * 0.866, size * 0.5);
+      ctx.lineTo(size * 0.866, size * 0.5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawDiamond(ctx, cx, cy, size, rotation) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(rotation);
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.lineTo(size * 0.7, 0);
+      ctx.lineTo(0, size);
+      ctx.lineTo(-size * 0.7, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawCross(ctx, cx, cy, size, rotation) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(rotation);
+      const w = size * 0.35;
+      ctx.fillRect(-size * 0.7, -w, size * 1.4, w * 2);
+      ctx.fillRect(-w, -size * 0.7, w * 2, size * 1.4);
+      ctx.restore();
+    }
+
+    function drawRing(ctx, cx, cy, size) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, size, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    function createGeoShapes() {
+      geoShapes = [];
+      for (let i = 0; i < SHAPE_COUNT; i++) {
+        const type = Math.floor(Math.random() * 5); // 0:circle, 1:triangle, 2:diamond, 3:cross, 4:ring
+        geoShapes.push({
+          type,
+          x: Math.random() * geofield.width,
+          y: Math.random() * geofield.height,
+          size: Math.random() * 10 + 3,
+          color: memphisColors[Math.floor(Math.random() * memphisColors.length)],
+          baseAlpha: Math.random() * 0.22 + 0.08,
+          rotation: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.004,
+          floatSpeed: Math.random() * 0.015 + 0.003,
+          floatPhase: Math.random() * Math.PI * 2,
         });
       }
     }
-    function animateStars() {
-      starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+
+    function drawGeoShapes() {
+      geoCtx.clearRect(0, 0, geofield.width, geofield.height);
       const t = Date.now() / 1000;
-      for (const s of stars) {
-        const flicker = Math.sin(t * s.speed * 14 + s.phase) * (s.bright ? 0.45 : 0.35);
-        const alpha = Math.max(0.06, Math.min(1, s.baseAlpha + flicker));
-        starCtx.beginPath();
-        starCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        starCtx.fillStyle = `rgba(255,255,255,${alpha})`;
-        starCtx.fill();
-        if (alpha > 0.55) {
-          starCtx.beginPath();
-          starCtx.arc(s.x, s.y, s.r * 2.5, 0, Math.PI * 2);
-          starCtx.fillStyle = `rgba(255,250,220,${alpha * 0.12})`;
-          starCtx.fill();
+
+      for (const s of geoShapes) {
+        const yOffset = Math.sin(t * s.floatSpeed * 8 + s.floatPhase) * 8;
+        const alpha = s.baseAlpha + Math.sin(t * 0.7 + s.floatPhase) * 0.05;
+        geoCtx.globalAlpha = Math.max(0.04, Math.min(0.35, alpha));
+        geoCtx.fillStyle = s.color;
+        geoCtx.strokeStyle = s.color;
+        geoCtx.lineWidth = 1.5;
+
+        const rot = s.rotation + t * s.rotSpeed;
+        const dy = s.y + yOffset;
+
+        switch (s.type) {
+          case 0: // circle
+            geoCtx.beginPath();
+            geoCtx.arc(s.x, dy, s.size, 0, Math.PI * 2);
+            geoCtx.fill();
+            break;
+          case 1: // triangle
+            drawTriangle(geoCtx, s.x, dy, s.size, rot);
+            break;
+          case 2: // diamond
+            drawDiamond(geoCtx, s.x, dy, s.size, rot);
+            break;
+          case 3: // cross
+            drawCross(geoCtx, s.x, dy, s.size, rot);
+            break;
+          case 4: // ring
+            drawRing(geoCtx, s.x, dy, s.size);
+            break;
         }
       }
-      requestAnimationFrame(animateStars);
+      geoCtx.globalAlpha = 1;
+      requestAnimationFrame(drawGeoShapes);
     }
-    resizeStarfield();
-    createStars();
-    animateStars();
+
+    resizeGeofield();
+    createGeoShapes();
+    drawGeoShapes();
     window.addEventListener('resize', () => {
-      resizeStarfield();
-      createStars();
+      resizeGeofield();
+      createGeoShapes();
     });
 
     // ==================== WebSocket ====================
@@ -400,10 +659,10 @@
 
     // ==================== 弹幕系统 ====================
     const colors = [
-      '#FF7B7B', '#FFB08C', '#FFD93D', '#FFE0A3',
-      '#4ECDC4', '#7EDDD6', '#A8D8EA', '#C3B1E1',
-      '#F8A5C2', '#F7DC6F', '#82E0AA', '#AED6F1',
-      '#FAD7A0', '#D7BDE2', '#A3E4D7', '#F9E79F',
+      '#FF71CE', '#FFCE5C', '#86CCCA', '#8B6BAE',
+      '#FF6B6B', '#7ECB9A', '#B8A9E8', '#FFB347',
+      '#FF8E72', '#4ECDC4', '#FF69B4', '#87CEEB',
+      '#F7DC6F', '#82E0AA', '#F8A5C2', '#AED6F1',
     ];
     function getRandomColor() {
       return colors[Math.floor(Math.random() * colors.length)];
@@ -518,7 +777,7 @@
 
     // ==================== Toast ====================
     let toastTimer;
-    function showToast(msg, bg = '#FF7B7B') {
+    function showToast(msg, bg = '#FF6B6B') {
       clearTimeout(toastTimer);
       toast.textContent = msg;
       toast.style.background = bg;
@@ -600,13 +859,13 @@
       if (musicOn) {
         musicIconOn.style.display = 'block';
         musicIconOff.style.display = 'none';
-        musicBtn.style.color = 'rgba(255,255,255,0.85)';
-        musicBtn.style.background = 'rgba(255,255,255,0.07)';
+        musicBtn.style.color = 'rgba(255,255,255,0.9)';
+        musicBtn.style.background = 'rgba(26, 16, 64, 0.92)';
       } else {
         musicIconOn.style.display = 'none';
         musicIconOff.style.display = 'block';
-        musicBtn.style.color = 'rgba(255,255,255,0.40)';
-        musicBtn.style.background = 'rgba(255,255,255,0.04)';
+        musicBtn.style.color = 'rgba(255,255,255,0.4)';
+        musicBtn.style.background = 'rgba(26, 16, 64, 0.6)';
       }
     }
 
@@ -639,6 +898,54 @@
       }
       updateMusicUI();
     });
+
+    // ==================== 浮动儿童画廊 ====================
+    function initFloatingGallery() {
+      const layer = document.getElementById('gallery-layer');
+      const arts = [
+        { src: 'assets/变色龙.jpg', color: 'var(--pink)',    size: 200, top: '5%',  duration: 38, reverse: false },
+        { src: 'assets/鸟巢.png',   color: 'var(--coral)',   size: 190, top: '24%', duration: 46, reverse: true  },
+        { src: 'assets/风.jpg',     color: 'var(--yellow)',  size: 170, top: '38%', duration: 34, reverse: false },
+        { src: 'assets/乌隼.jpg',   color: 'var(--mint)',    size: 185, top: '58%', duration: 52, reverse: true  },
+        { src: 'assets/月亮.jpg',   color: 'var(--lavender)',size: 175, top: '70%', duration: 40, reverse: false },
+        { src: 'assets/空气.jpg',   color: 'var(--purple)',  size: 195, top: '80%', duration: 44, reverse: true  },
+        { src: 'assets/大树.jpg',   color: 'var(--teal)',    size: 180, top: '90%', duration: 36, reverse: false },
+      ];
+
+      arts.forEach((art, i) => {
+        const frame = document.createElement('div');
+        frame.className = 'art-frame';
+        frame.style.borderColor = art.color;
+        frame.style.width = art.size + 'px';
+        frame.style.top = art.top;
+        frame.style.animationName = 'float-art';
+        frame.style.animationTimingFunction = 'linear';
+        frame.style.animationIterationCount = 'infinite';
+        const animName = art.reverse ? 'float-art-reverse' : 'float-art';
+        frame.style.animationName = animName;
+        frame.style.animationTimingFunction = 'linear';
+        frame.style.animationIterationCount = 'infinite';
+        frame.style.animationDuration = art.duration + 's';
+        // 负延迟让页面一打开就有画分布在屏幕上，反向动画用独立偏移避免碰撞
+        const stagger = 13;
+        const delayOffset = art.reverse ? stagger * 0.5 : 0;
+        const delay = -(((i * stagger + delayOffset) % art.duration));
+        frame.style.animationDelay = delay + 's';
+
+        // 随机轻微旋转，每幅画有独特的手绘倾斜感
+        const rot = (Math.random() - 0.5) * 7;
+        frame.style.setProperty('--rot', rot + 'deg');
+
+        const img = document.createElement('img');
+        img.src = art.src;
+        img.alt = '';
+        img.loading = 'lazy';
+        frame.appendChild(img);
+
+        layer.appendChild(frame);
+      });
+    }
+    initFloatingGallery();
 
     // ==================== 二维码 ====================
     const sendUrl = location.origin + '/send.html';

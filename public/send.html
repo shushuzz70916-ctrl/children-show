@@ -4,15 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>发送弹幕 - iSTART儿童艺术展-11：07PM</title>
-  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Nunito:wght@400;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --pink: #FF71CE;
+      --yellow: #FFCE5C;
+      --teal: #86CCCA;
+      --purple: #8B6BAE;
+      --coral: #FF6B6B;
+      --mint: #7ECB9A;
+      --lavender: #B8A9E8;
+      --bg-deep: #1a1040;
+      --border-width: 3px;
+      --shadow-offset: 6px;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       min-height: 100vh;
       min-height: 100dvh;
-      background: linear-gradient(160deg, #0a0a1a 0%, #12102a 30%, #1a1040 60%, #0f0f2a 100%);
-      font-family: 'Nunito', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background:
+        radial-gradient(circle, #fff 1px, transparent 1px),
+        linear-gradient(150deg, #1a1040 0%, #1e1650 35%, #1a1040 65%, #150d35 100%);
+      background-size: 24px 24px, 100% 100%;
+      font-family: 'Nunito', 'Fredoka', 'PingFang SC', 'Microsoft YaHei', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -20,35 +36,66 @@
       padding: 24px;
     }
 
+    /* ========== 装饰几何元素 ========== */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 5%;
+      right: 5%;
+      width: 50px;
+      height: 50px;
+      background: var(--teal);
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: 10%;
+      left: 7%;
+      width: 40px;
+      height: 40px;
+      background: var(--pink);
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: 0;
+    }
+
     .card {
+      position: relative;
+      z-index: 1;
       width: 100%;
       max-width: 400px;
-      background: rgba(255,255,255,0.07);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 28px;
+      background: rgba(26, 16, 64, 0.92);
+      border: var(--border-width) solid rgba(255,255,255,0.85);
+      border-radius: 24px;
       padding: 36px 28px;
-      box-shadow: 0 12px 48px rgba(0,0,0,0.3);
+      box-shadow:
+        var(--shadow-offset) var(--shadow-offset) 0 var(--purple),
+        0 0 40px rgba(139,107,174,0.25);
       text-align: center;
     }
 
     .card h1 {
       font-family: 'ZCOOL KuaiLe', 'PingFang SC', sans-serif;
-      font-size: 34px;
-      background: linear-gradient(135deg, #FF7B7B, #FFD93D 60%, #FFB347);
+      font-size: 32px;
+      background: linear-gradient(135deg, var(--pink), var(--yellow) 50%, var(--teal));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       margin-bottom: 6px;
-      filter: drop-shadow(0 0 20px rgba(255,123,123,0.25));
+      filter: drop-shadow(2px 2px 0 var(--purple));
     }
     .card .subtitle {
       font-size: 14px;
-      color: rgba(255,255,255,0.50);
-      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      font-weight: 700;
       margin-bottom: 28px;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.03em;
+      font-family: 'Fredoka', 'Nunito', 'PingFang SC', sans-serif;
     }
 
     .input-group {
@@ -61,53 +108,55 @@
       width: 100%;
       padding: 15px 18px;
       font-size: 17px;
-      border: 2px solid rgba(255,255,255,0.12);
-      border-radius: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 14px;
       outline: none;
-      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
       font-weight: 600;
-      background: rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.1);
       color: #fff;
       -webkit-appearance: none;
-      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
     }
     #danmaku-input::placeholder {
-      color: rgba(255,255,255,0.30);
+      color: rgba(255,255,255,0.3);
       font-weight: 400;
     }
     #danmaku-input:focus {
-      border-color: rgba(255,123,123,0.5);
-      background: rgba(255,255,255,0.12);
-      box-shadow: 0 0 0 4px rgba(255,123,123,0.12);
+      border-color: var(--pink);
+      background: rgba(255,255,255,0.16);
+      box-shadow: 0 0 0 4px rgba(255,113,206,0.2);
     }
 
     #send-btn {
       width: 100%;
       padding: 15px;
       font-size: 19px;
-      border: none;
-      border-radius: 18px;
-      background: linear-gradient(135deg, #FF7B7B, #FF8E73);
+      border: var(--border-width) solid rgba(255,255,255,0.9);
+      border-radius: 14px;
+      background: var(--pink);
       color: #fff;
       cursor: pointer;
-      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-family: 'Fredoka', 'Nunito', 'PingFang SC', sans-serif;
       font-weight: 700;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       -webkit-appearance: none;
-      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-      box-shadow: 0 4px 20px rgba(255,123,123,0.3);
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+      box-shadow: 4px 4px 0 var(--yellow);
     }
     #send-btn:active {
-      transform: scale(0.97);
-      opacity: 0.9;
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--yellow);
+      background: #FF8BD8;
     }
 
     .char-count {
       text-align: right;
       font-size: 12px;
-      color: rgba(255,255,255,0.35);
+      color: rgba(255,255,255,0.4);
       font-weight: 600;
       margin-top: 2px;
+      font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
     }
 
     #toast {
@@ -115,44 +164,59 @@
       padding: 12px 20px;
       border-radius: 14px;
       font-size: 15px;
-      font-family: 'Nunito', 'PingFang SC', sans-serif;
-      font-weight: 600;
+      font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
+      font-weight: 700;
       display: none;
       text-align: center;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      border: var(--border-width) solid rgba(255,255,255,0.85);
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
     }
 
     .connection-status {
       margin-top: 20px;
       font-size: 12px;
-      color: rgba(255,255,255,0.40);
+      color: rgba(255,255,255,0.45);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      font-weight: 600;
+      font-weight: 700;
+      font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
     }
 
     .status-dot {
       display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      border: 1.5px solid rgba(255,255,255,0.6);
     }
     .status-dot.connected {
-      background: #4ECDC4;
-      box-shadow: 0 0 8px rgba(78,205,196,0.5);
+      background: var(--mint);
+      box-shadow: 0 0 10px rgba(126,203,154,0.5);
       animation: pulse 1.5s infinite;
     }
     .status-dot.disconnected {
-      background: #E17055;
-      box-shadow: 0 0 8px rgba(225,112,85,0.4);
+      background: var(--coral);
+      box-shadow: 0 0 10px rgba(255,107,107,0.4);
       animation: none;
     }
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
+    }
+
+    /* ========== 底部波浪装饰 ========== */
+    .squiggle-bottom {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 24px;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
     }
   </style>
 </head>
@@ -175,6 +239,11 @@
       <span id="status-text">连接中...</span>
     </div>
   </div>
+
+  <svg class="squiggle-bottom" viewBox="0 0 200 24" fill="none">
+    <path d="M0,12 Q20,2 40,12 Q60,22 80,12 Q100,2 120,12 Q140,22 160,12 Q180,2 200,12"
+          stroke="#FFCE5C" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>
 
   <script>
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
