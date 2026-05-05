@@ -2,8 +2,9 @@
 
 ## 项目概述
 
-小1的儿童展互动弹幕系统：大屏幕滚动弹幕 + 手机扫码发送 + DeepSeek AI 内容审核 + WebSocket 实时推送。
+iSTART儿童艺术展-11：07PM 互动弹幕系统：大屏幕滚动弹幕 + 手机扫码发送 + DeepSeek AI 内容审核 + WebSocket 实时推送。
 部署于 Render 公网，Node.js 单进程同时服务 HTTP 和 WebSocket。
+视觉风格：星空梦境主题 — 深邃夜空背景 + 毛玻璃面板 + 暖色弹幕 + 满月元素。
 
 ---
 
@@ -99,19 +100,22 @@ children-show/
 
 | 位置 | 功能 |
 |------|------|
-| 中央 | 标题 "小1的儿童展"，彩虹渐变动画，96px |
-| 顶部居中 | 输入框（100 字限制）+ 发送按钮 |
-| 右下角 | 二维码卡片 → 手机扫码跳转 send.html |
-| 右上角 | 音乐开关按钮 🔊/🔇 |
-| 全屏 | 弹幕层 (z-index: 10)，pointer-events: none |
+| 中央 | 标题 "iSTART儿童艺术展-11：07PM"，暖金渐变 + 浮动 + 双层光晕，68px，ZCOOL KuaiLe 字体 |
+| 标题下方 (calc 50%+58px) | 毛玻璃输入框（100 字限制）+ 发送按钮 |
+| 左上角 | 满月：径向渐变200px暖黄圆 + 多层扩散光晕 + 呼吸动画 (z-index: 1) |
+| 右下角 | 毛玻璃二维码卡片 → 手机扫码跳转 send.html |
+| 右上角 | 毛玻璃音乐开关按钮，SVG 图标（扬声器/静音） |
+| 全屏 | 弹幕层 (z-index: 10)，Nunito 字体 28px bold，pointer-events: none |
 | 标题层 | z-index: 5，弹幕在其上方飞过 |
+| 背景 | 星空画布 (z-index: 0)：180颗闪烁星星，30颗高亮星带暖色柔光晕 |
+| 整体 | Nunito 字体（UI 文字），毛玻璃面板贯穿（backdrop-filter: blur） |
 
 ### 弹幕动画
 
 - CSS `@keyframes scroll-left`：`translateX(100vw)` → `translateX(-100%)`
-- `.danmaku-item`：`position: absolute; white-space: nowrap; font-size: 28px; font-weight: bold`
+- `.danmaku-item`：`font-family: Nunito; font-size: 28px; font-weight: 700`，暖色系 16 色 + `text-shadow: 0 0 18px currentColor` 发光
 - 动画：`animation: scroll-left linear forwards`，时长由 JS 动态设置
-- 文字颜色从 16 种预定义色中随机选取
+- 文字颜色从 16 种暖色系预设中随机选取（珊瑚、暖金、薄荷、薰衣草等）
 
 ### 弹幕调度系统（核心逻辑）
 
@@ -167,10 +171,10 @@ children-show/
 
 ### 背景音乐
 
-- 音源：`public/小咪屁屁奇迹.mp3`（本地文件）
+- 音源：`public/children-light-music.mp3`（Pixabay 免版税儿童轻音乐，尤克里里+木琴）
 - HTML `<audio loop>` 循环播放，音量 0.3
 - 自动播放受浏览器策略限制，页面首次点击后触发
-- 右上角按钮切换播放/暂停
+- 右上角毛玻璃按钮切换播放/暂停，SVG 图标（扬声器/静音）
 
 ### QR 码
 
@@ -239,3 +243,6 @@ children-show/
 10. **不要改变 Toast 颜色约定**：蓝色=审核中，绿色=成功，红色=拒绝，橙色=错误
 11. **不要改变 CSS 动画 `scroll-left`**，它定义了弹幕从右到左的飞行效果
 12. **不要删除 `app.set('trust proxy', 1)`**，否则 Render 代理后协议检测错误
+13. **不要用 emoji 做图标**，音乐按钮等交互元素用 SVG 图标
+14. **满月 `#moon` 和星空 `#starfield` 的 z-index**：星空 0 < 满月 1 < 标题 5 < 弹幕 10 < 交互元素 20-30，不要打乱层级
+15. **标题字体 ZCOOL KuaiLe 在复杂汉字（如「童」）会笔画粘连**，必须保留 `-webkit-text-stroke` 和 `letter-spacing` 配置
