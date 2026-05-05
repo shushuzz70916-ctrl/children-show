@@ -401,13 +401,7 @@
 
     .art-frame {
       position: absolute;
-      background: rgba(255,255,255,0.92);
-      padding: 14px;
-      border: var(--border-width) solid;
-      /* 不规则圆角模拟手绘裁剪感 */
-      border-radius: 18px 14px 20px 16px;
-      box-shadow: var(--shadow-offset) var(--shadow-offset) 0 rgba(0,0,0,0.2);
-      opacity: 0.58;
+      opacity: 0.75;
       will-change: transform;
     }
 
@@ -415,7 +409,7 @@
       width: 100%;
       height: auto;
       display: block;
-      border-radius: 4px;
+      filter: drop-shadow(0 6px 20px rgba(0,0,0,0.45));
     }
 
     @keyframes float-art {
@@ -940,6 +934,8 @@
         img.src = art.src;
         img.alt = '';
         img.loading = 'lazy';
+        // 白底画作用 multiply 消除白底，黑底鸟巢用 screen 消除黑底
+        img.style.mixBlendMode = art.src.includes('鸟巢') ? 'screen' : 'multiply';
         frame.appendChild(img);
 
         layer.appendChild(frame);
