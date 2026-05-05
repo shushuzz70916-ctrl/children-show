@@ -15,7 +15,8 @@ staticSites:
   - type: static
     name: quantum-computing
     routes:
-      - source: /*
+      - type: rewrite
+        source: /*
         destination: /index.html
     buildCommand: null
     publishDir: quantum-site
