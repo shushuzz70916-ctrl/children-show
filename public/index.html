@@ -26,6 +26,29 @@
       pointer-events: none;
     }
 
+    /* 满月 */
+    #moon {
+      position: absolute;
+      top: 8%;
+      right: 15%;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 40%, #FFF8E7 0%, #FFE9B0 30%, #FFD97A 60%, #F5C852 100%);
+      box-shadow:
+        0 0 60px rgba(255,220,140,0.35),
+        0 0 140px rgba(255,200,100,0.20),
+        0 0 240px rgba(255,180,60,0.10),
+        0 0 400px rgba(255,200,80,0.06);
+      z-index: 1;
+      pointer-events: none;
+      animation: moonGlow 6s ease-in-out infinite;
+    }
+    @keyframes moonGlow {
+      0%, 100% { box-shadow: 0 0 60px rgba(255,220,140,0.35), 0 0 140px rgba(255,200,100,0.20), 0 0 240px rgba(255,180,60,0.10), 0 0 400px rgba(255,200,80,0.06); }
+      50% { box-shadow: 0 0 80px rgba(255,220,140,0.45), 0 0 180px rgba(255,200,100,0.28), 0 0 300px rgba(255,180,60,0.16), 0 0 480px rgba(255,200,80,0.10); }
+    }
+
     /* 弹幕层 */
     #danmaku-layer {
       position: absolute;
@@ -63,11 +86,13 @@
     #title-area h1 {
       font-family: 'ZCOOL KuaiLe', 'PingFang SC', sans-serif;
       font-size: 96px;
+      letter-spacing: 0.04em;
       background: linear-gradient(135deg, #FF7B7B 0%, #FFD93D 50%, #FFB347 100%);
       background-size: 200% 200%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      -webkit-text-stroke: 1.5px rgba(10,10,26,0.35);
       filter: drop-shadow(0 0 40px rgba(255,123,123,0.35));
       animation: titleFloat 5s ease-in-out infinite, titleShimmer 6s ease-in-out infinite;
     }
@@ -252,6 +277,9 @@
 
   <!-- 星空背景 -->
   <canvas id="starfield"></canvas>
+
+  <!-- 满月 -->
+  <div id="moon"></div>
 
   <!-- 背景音乐 -->
   <audio id="bgm" loop preload="auto"
