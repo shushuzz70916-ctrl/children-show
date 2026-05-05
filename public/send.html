@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>发送弹幕 - 小1的儿童展</title>
-  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       min-height: 100vh;
       min-height: 100dvh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      font-family: 'ZCOOL KuaiLe', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(160deg, #0a0a1a 0%, #12102a 30%, #1a1040 60%, #0f0f2a 100%);
+      font-family: 'Nunito', 'PingFang SC', 'Microsoft YaHei', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -23,25 +23,32 @@
     .card {
       width: 100%;
       max-width: 400px;
-      background: rgba(255,255,255,0.95);
-      border-radius: 24px;
-      padding: 32px 24px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 28px;
+      padding: 36px 28px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.3);
       text-align: center;
     }
 
     .card h1 {
-      font-size: 32px;
-      background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+      font-family: 'ZCOOL KuaiLe', 'PingFang SC', sans-serif;
+      font-size: 34px;
+      background: linear-gradient(135deg, #FF7B7B, #FFD93D 60%, #FFB347);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
+      filter: drop-shadow(0 0 20px rgba(255,123,123,0.25));
     }
     .card .subtitle {
       font-size: 14px;
-      color: #999;
-      margin-bottom: 24px;
+      color: rgba(255,255,255,0.50);
+      font-weight: 600;
+      margin-bottom: 28px;
+      letter-spacing: 0.02em;
     }
 
     .input-group {
@@ -52,36 +59,43 @@
 
     #danmaku-input {
       width: 100%;
-      padding: 14px 18px;
-      font-size: 18px;
-      border: 3px solid #FF6B6B;
-      border-radius: 16px;
+      padding: 15px 18px;
+      font-size: 17px;
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
       outline: none;
-      font-family: inherit;
-      background: #fff;
-      color: #333;
+      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-weight: 600;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
       -webkit-appearance: none;
-    }
-    #danmaku-input:focus {
-      border-color: #FF8E53;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
     }
     #danmaku-input::placeholder {
-      color: #ccc;
+      color: rgba(255,255,255,0.30);
+      font-weight: 400;
+    }
+    #danmaku-input:focus {
+      border-color: rgba(255,123,123,0.5);
+      background: rgba(255,255,255,0.12);
+      box-shadow: 0 0 0 4px rgba(255,123,123,0.12);
     }
 
     #send-btn {
       width: 100%;
-      padding: 14px;
-      font-size: 20px;
+      padding: 15px;
+      font-size: 19px;
       border: none;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+      border-radius: 18px;
+      background: linear-gradient(135deg, #FF7B7B, #FF8E73);
       color: #fff;
       cursor: pointer;
-      font-family: inherit;
-      font-weight: bold;
+      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.04em;
       -webkit-appearance: none;
-      transition: transform 0.15s, opacity 0.15s;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      box-shadow: 0 4px 20px rgba(255,123,123,0.3);
     }
     #send-btn:active {
       transform: scale(0.97);
@@ -91,19 +105,33 @@
     .char-count {
       text-align: right;
       font-size: 12px;
-      color: #bbb;
-      font-family: inherit;
-      margin-top: 4px;
+      color: rgba(255,255,255,0.35);
+      font-weight: 600;
+      margin-top: 2px;
     }
 
     #toast {
       margin-top: 16px;
       padding: 12px 20px;
-      border-radius: 12px;
-      font-size: 16px;
-      font-family: inherit;
+      border-radius: 14px;
+      font-size: 15px;
+      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-weight: 600;
       display: none;
       text-align: center;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .connection-status {
+      margin-top: 20px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.40);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 600;
     }
 
     .status-dot {
@@ -111,35 +139,34 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      margin-right: 6px;
+    }
+    .status-dot.connected {
+      background: #4ECDC4;
+      box-shadow: 0 0 8px rgba(78,205,196,0.5);
       animation: pulse 1.5s infinite;
     }
-    .status-dot.connected { background: #4ECDC4; }
-    .status-dot.disconnected { background: #E17055; animation: none; }
+    .status-dot.disconnected {
+      background: #E17055;
+      box-shadow: 0 0 8px rgba(225,112,85,0.4);
+      animation: none;
+    }
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
-    }
-
-    .connection-status {
-      margin-top: 20px;
-      font-size: 12px;
-      color: #bbb;
-      font-family: inherit;
     }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h1>🎈 小1的儿童展</h1>
-    <p class="subtitle">发送弹幕，出现在大屏幕上！</p>
+    <h1>小1的儿童展</h1>
+    <p class="subtitle">发送弹幕，出现在大屏幕上</p>
 
     <div class="input-group">
       <input id="danmaku-input" type="text" maxlength="100"
              placeholder="输入弹幕内容..." autofocus>
       <span class="char-count" id="char-count">0/100</span>
-      <button id="send-btn">发 送 🚀</button>
+      <button id="send-btn">发 送</button>
     </div>
 
     <div id="toast"></div>
@@ -171,7 +198,7 @@
       ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         if (msg.type === 'new_danmaku') {
-          showToast('发送成功！✨', '#4ECDC4');
+          showToast('发送成功', '#4ECDC4');
         } else if (msg.type === 'rejected') {
           showToast(msg.message, '#E17055');
         } else if (msg.type === 'error') {

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>小1的儿童展 - 弹幕互动</title>
-  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -12,9 +12,18 @@
       width: 100vw;
       height: 100vh;
       overflow: hidden;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      font-family: 'ZCOOL KuaiLe', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(160deg, #0a0a1a 0%, #12102a 30%, #1a1040 60%, #0f0f2a 100%);
+      font-family: 'Nunito', 'ZCOOL KuaiLe', 'PingFang SC', 'Microsoft YaHei', sans-serif;
       position: relative;
+    }
+
+    /* 星空画布 */
+    #starfield {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
     }
 
     /* 弹幕层 */
@@ -30,10 +39,12 @@
       position: absolute;
       white-space: nowrap;
       font-size: 28px;
-      font-weight: bold;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      font-weight: 700;
+      font-family: 'Nunito', 'ZCOOL KuaiLe', 'PingFang SC', sans-serif;
+      text-shadow: 0 0 18px currentColor;
       animation: scroll-left linear forwards;
       pointer-events: none;
+      letter-spacing: 0.02em;
     }
     @keyframes scroll-left {
       0%   { transform: translateX(100vw); }
@@ -50,70 +61,107 @@
       pointer-events: none;
     }
     #title-area h1 {
+      font-family: 'ZCOOL KuaiLe', 'PingFang SC', sans-serif;
       font-size: 96px;
-      background: linear-gradient(45deg, #FF6B6B, #FFE66D, #4ECDC4, #FF6B6B);
-      background-size: 300% 300%;
+      background: linear-gradient(135deg, #FF7B7B 0%, #FFD93D 50%, #FFB347 100%);
+      background-size: 200% 200%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      animation: rainbow 3s ease infinite;
-      text-shadow: none;
-      filter: drop-shadow(4px 4px 6px rgba(0,0,0,0.2));
+      filter: drop-shadow(0 0 40px rgba(255,123,123,0.35));
+      animation: titleFloat 5s ease-in-out infinite, titleShimmer 6s ease-in-out infinite;
     }
-    @keyframes rainbow {
-      0%   { background-position: 0% 50%; }
-      50%  { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    @keyframes titleFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes titleShimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* 玻璃面板通用 */
+    .glass-panel {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.10);
     }
 
     /* 输入区 */
     #input-area {
       position: absolute;
-      top: 24px;
+      top: 28px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 12px;
+      gap: 10px;
       z-index: 20;
+      padding: 8px;
+      border-radius: 40px;
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
     }
     #input-area input {
-      width: 360px;
-      padding: 12px 20px;
-      font-size: 20px;
-      border: 3px solid #FF6B6B;
-      border-radius: 30px;
+      width: 340px;
+      padding: 12px 22px;
+      font-size: 18px;
+      border: none;
+      border-radius: 32px;
       outline: none;
-      font-family: inherit;
-      background: rgba(255,255,255,0.9);
-      color: #333;
+      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-weight: 600;
+      background: rgba(255,255,255,0.10);
+      color: #fff;
+      transition: background 0.25s, box-shadow 0.25s;
+    }
+    #input-area input::placeholder {
+      color: rgba(255,255,255,0.35);
+      font-weight: 400;
+    }
+    #input-area input:focus {
+      background: rgba(255,255,255,0.16);
+      box-shadow: 0 0 0 3px rgba(255,123,123,0.25);
     }
     #input-area button {
-      padding: 12px 28px;
-      font-size: 20px;
+      padding: 12px 26px;
+      font-size: 18px;
       border: none;
-      border-radius: 30px;
-      background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+      border-radius: 32px;
+      background: linear-gradient(135deg, #FF7B7B, #FF8E73);
       color: #fff;
       cursor: pointer;
-      font-family: inherit;
-      font-weight: bold;
-      transition: transform 0.15s;
+      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 15px rgba(255,123,123,0.3);
     }
-    #input-area button:hover { transform: scale(1.05); }
-    #input-area button:active { transform: scale(0.95); }
+    #input-area button:hover {
+      transform: scale(1.04);
+      box-shadow: 0 6px 24px rgba(255,123,123,0.45);
+    }
+    #input-area button:active { transform: scale(0.96); }
 
-    /* Toast 提示 */
+    /* Toast */
     #toast {
       position: absolute;
-      top: 100px;
+      top: 110px;
       left: 50%;
       transform: translateX(-50%);
       padding: 12px 28px;
-      border-radius: 24px;
-      font-size: 18px;
-      font-family: inherit;
+      border-radius: 28px;
+      font-size: 16px;
+      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-weight: 600;
       z-index: 30;
       display: none;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.10);
       animation: fadeInOut 2.5s ease forwards;
     }
     @keyframes fadeInOut {
@@ -123,61 +171,87 @@
       100% { opacity: 0; }
     }
 
-    /* 二维码 */
+    /* 二维码卡片 */
     #qr-area {
       position: absolute;
-      bottom: 24px;
-      right: 24px;
-      background: rgba(255,255,255,0.95);
-      border-radius: 20px;
-      padding: 16px 16px 12px;
+      bottom: 28px;
+      right: 28px;
+      border-radius: 24px;
+      padding: 20px 20px 14px;
       text-align: center;
       z-index: 20;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
     }
-    #qr-area img { width: 140px; height: 140px; display: block; }
+    #qr-area img {
+      width: 130px;
+      height: 130px;
+      display: block;
+      border-radius: 12px;
+      background: #fff;
+      padding: 4px;
+    }
     #qr-area p {
-      margin-top: 8px;
-      font-size: 14px;
-      color: #666;
-      font-family: inherit;
+      margin-top: 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.65);
+      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
     /* 音乐开关 */
     #music-btn {
       position: absolute;
-      top: 24px;
-      right: 24px;
-      width: 48px;
-      height: 48px;
+      top: 36px;
+      right: 28px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      border: none;
-      background: rgba(255,255,255,0.9);
-      font-size: 24px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       cursor: pointer;
       z-index: 20;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      transition: transform 0.15s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: rgba(255,255,255,0.85);
     }
-    #music-btn:hover { transform: scale(1.1); }
+    #music-btn:hover {
+      transform: scale(1.1);
+      background: rgba(255,255,255,0.12);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+    }
+    #music-btn svg {
+      width: 20px;
+      height: 20px;
+    }
 
     /* 链接提示 */
     #link-hint {
       position: absolute;
-      bottom: 24px;
-      left: 24px;
-      color: rgba(255,255,255,0.8);
-      font-size: 14px;
+      bottom: 28px;
+      left: 28px;
+      color: rgba(255,255,255,0.45);
+      font-size: 13px;
       z-index: 20;
-      font-family: inherit;
+      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-weight: 600;
       pointer-events: none;
     }
   </style>
 </head>
 <body>
+
+  <!-- 星空背景 -->
+  <canvas id="starfield"></canvas>
 
   <!-- 背景音乐 -->
   <audio id="bgm" loop preload="auto"
@@ -205,11 +279,22 @@
   <!-- 二维码 -->
   <div id="qr-area">
     <img id="qr-img" src="" alt="扫码发送弹幕">
-    <p>📱 扫码发送弹幕</p>
+    <p>扫码发送弹幕</p>
   </div>
 
   <!-- 音乐开关 -->
-  <button id="music-btn" title="音乐开关">🔊</button>
+  <button id="music-btn" title="音乐开关">
+    <svg id="music-icon-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+    </svg>
+    <svg id="music-icon-off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <line x1="23" y1="9" x2="17" y2="15"></line>
+      <line x1="17" y1="9" x2="23" y2="15"></line>
+    </svg>
+  </button>
 
   <!-- 链接 -->
   <div id="link-hint" style="display:none;">
@@ -217,6 +302,51 @@
   </div>
 
   <script>
+    // ==================== 星空背景 ====================
+    const starCanvas = document.getElementById('starfield');
+    const starCtx = starCanvas.getContext('2d');
+    let stars = [];
+    const STAR_COUNT = 160;
+
+    function resizeStarfield() {
+      starCanvas.width = window.innerWidth;
+      starCanvas.height = window.innerHeight;
+    }
+    function createStars() {
+      stars = [];
+      for (let i = 0; i < STAR_COUNT; i++) {
+        stars.push({
+          x: Math.random() * starCanvas.width,
+          y: Math.random() * starCanvas.height,
+          r: Math.random() * 1.8 + 0.4,
+          baseAlpha: Math.random() * 0.5 + 0.15,
+          speed: Math.random() * 0.015 + 0.004,
+          phase: Math.random() * Math.PI * 2,
+        });
+      }
+    }
+    function animateStars() {
+      starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+      const t = Date.now() / 1000;
+      for (const s of stars) {
+        const flicker = Math.sin(t * s.speed * 12 + s.phase) * 0.25;
+        const alpha = Math.max(0.05, Math.min(1, s.baseAlpha + flicker));
+        starCtx.beginPath();
+        starCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        starCtx.fillStyle = `rgba(255,255,255,${alpha})`;
+        starCtx.fill();
+      }
+      requestAnimationFrame(animateStars);
+    }
+    resizeStarfield();
+    createStars();
+    animateStars();
+    window.addEventListener('resize', () => {
+      resizeStarfield();
+      createStars();
+    });
+
+    // ==================== WebSocket ====================
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     let ws;
     let wsReconnectTimer = null;
@@ -227,13 +357,15 @@
     const toast = document.getElementById('toast');
     const bgm = document.getElementById('bgm');
     const musicBtn = document.getElementById('music-btn');
+    const musicIconOn = document.getElementById('music-icon-on');
+    const musicIconOff = document.getElementById('music-icon-off');
 
     // ==================== 弹幕系统 ====================
     const colors = [
-      '#FF6B6B', '#FF8E53', '#FFE66D', '#4ECDC4',
-      '#45B7D1', '#96CEB4', '#FFD93D', '#6C5CE7',
-      '#A29BFE', '#FD79A8', '#FDCB6E', '#00B894',
-      '#E17055', '#00CEC9', '#FAB1A0', '#81ECEC',
+      '#FF7B7B', '#FFB08C', '#FFD93D', '#FFE0A3',
+      '#4ECDC4', '#7EDDD6', '#A8D8EA', '#C3B1E1',
+      '#F8A5C2', '#F7DC6F', '#82E0AA', '#AED6F1',
+      '#FAD7A0', '#D7BDE2', '#A3E4D7', '#F9E79F',
     ];
     function getRandomColor() {
       return colors[Math.floor(Math.random() * colors.length)];
@@ -242,11 +374,11 @@
     const TOP_MARGIN = 80;
     const BOTTOM_MARGIN = 140;
     const ROW_HEIGHT = 50;
-    const TARGET_MIN = 10;         // 屏幕最少保持 10 条
-    const TARGET_MAX = 20;         // 最多 20 条
-    const MIN_DURATION = 18;       // 飞过时间 18-26s，略有差异
+    const TARGET_MIN = 10;
+    const TARGET_MAX = 20;
+    const MIN_DURATION = 18;
     const MAX_DURATION = 26;
-    const LAUNCH_COOLDOWN = 1800;  // 两次发射至少间隔 1.8s
+    const LAUNCH_COOLDOWN = 1800;
 
     let rowCount;
     let rowFreeAt;
@@ -259,9 +391,9 @@
     recalcRows();
     window.addEventListener('resize', recalcRows);
 
-    let danmakuHistory = [];   // 所有历史弹幕（无限循环补充用）
+    let danmakuHistory = [];
     let historyCursor = 0;
-    let activeCount = 0;       // 当前屏幕上的弹幕数
+    let activeCount = 0;
     let lastLaunchTime = 0;
     let maintainTimer = null;
 
@@ -274,11 +406,9 @@
       return { row: best, wait: Math.max(0, rowFreeAt[best] - now) };
     }
 
-    // 分配轨道，urgent 优先选空闲行，否则选最早释放的行
     function pickRow(urgent) {
       const now = Date.now();
       if (urgent) {
-        // 收集当前空闲的行
         const freeRows = [];
         for (let i = 0; i < rowCount; i++) {
           if (rowFreeAt[i] <= now) freeRows.push(i);
@@ -287,14 +417,12 @@
           return { row: freeRows[Math.floor(Math.random() * freeRows.length)], delay: 0 };
         }
       }
-      // 没有空闲行，选最早释放的
       const found = findFreeRow();
       return { row: found.row, delay: Math.min(found.wait, 3000) };
     }
 
     function launchOne(text, urgent) {
       const { row, delay } = pickRow(urgent);
-      // 立即锁定轨道，防止其他弹幕分配到同一行
       rowFreeAt[row] = Math.max(rowFreeAt[row], Date.now() + LAUNCH_COOLDOWN);
 
       setTimeout(() => {
@@ -328,36 +456,31 @@
     function maintainScreen() {
       clearTimeout(maintainTimer);
 
-      // 已经够了，过会儿再检查
       if (activeCount >= TARGET_MIN) {
         maintainTimer = setTimeout(maintainScreen, 2000);
         return;
       }
 
-      // 没有历史弹幕可补充
       if (danmakuHistory.length === 0) {
         maintainTimer = setTimeout(maintainScreen, 1500);
         return;
       }
 
-      // 冷却时间内，稍微等等
       if (Date.now() - lastLaunchTime < LAUNCH_COOLDOWN) {
         maintainTimer = setTimeout(maintainScreen, LAUNCH_COOLDOWN - (Date.now() - lastLaunchTime));
         return;
       }
 
-      // 从历史弹幕取一条补充
       const text = danmakuHistory[historyCursor % danmakuHistory.length];
       historyCursor++;
       launchOne(text);
 
-      // 如果还不够，继续补
       maintainTimer = setTimeout(maintainScreen, LAUNCH_COOLDOWN);
     }
 
     // ==================== Toast ====================
     let toastTimer;
-    function showToast(msg, bg = '#FF6B6B') {
+    function showToast(msg, bg = '#FF7B7B') {
       clearTimeout(toastTimer);
       toast.textContent = msg;
       toast.style.background = bg;
@@ -402,18 +525,16 @@
           const texts = msg.data.map(d => d.text);
           if (texts.length > 0) {
             danmakuHistory = texts;
-            // 初始铺满屏幕
             const burst = Math.min(TARGET_MAX, texts.length);
             for (let i = 0; i < burst; i++) {
               setTimeout(() => launchOne(texts[i % texts.length]), i * 600);
             }
             historyCursor = burst;
-            // 启动保持逻辑
             scheduleMaintain(burst * 600 + LAUNCH_COOLDOWN);
           }
         } else if (msg.type === 'new_danmaku') {
           danmakuHistory.push(msg.data.text);
-          launchOne(msg.data.text, true);  // urgent: 用户弹幕立即飞入
+          launchOne(msg.data.text, true);
         } else if (msg.type === 'rejected') {
           showToast(msg.message, '#E17055');
         } else if (msg.type === 'error') {
@@ -433,23 +554,35 @@
     }
     connectWS();
 
-    // 背景音乐
+    // ==================== 背景音乐 ====================
     let musicOn = true;
     bgm.volume = 0.3;
 
-    // 尝试自动播放（需要用户交互后才能真正播放）
+    function updateMusicUI() {
+      if (musicOn) {
+        musicIconOn.style.display = 'block';
+        musicIconOff.style.display = 'none';
+        musicBtn.style.color = 'rgba(255,255,255,0.85)';
+        musicBtn.style.background = 'rgba(255,255,255,0.07)';
+      } else {
+        musicIconOn.style.display = 'none';
+        musicIconOff.style.display = 'block';
+        musicBtn.style.color = 'rgba(255,255,255,0.40)';
+        musicBtn.style.background = 'rgba(255,255,255,0.04)';
+      }
+    }
+
     function tryAutoplay() {
       bgm.play().then(() => {
         musicOn = true;
-        musicBtn.textContent = '🔊';
+        updateMusicUI();
       }).catch(() => {
         musicOn = false;
-        musicBtn.textContent = '🔇';
+        updateMusicUI();
       });
     }
     tryAutoplay();
 
-    // 点击任意位置后尝试播放
     document.addEventListener('click', () => {
       if (musicOn && bgm.paused) {
         bgm.play().catch(() => {});
@@ -460,23 +593,20 @@
       if (musicOn) {
         bgm.pause();
         musicOn = false;
-        musicBtn.textContent = '🔇';
-        musicBtn.style.background = 'rgba(255,255,255,0.6)';
       } else {
         bgm.play().then(() => {
           musicOn = true;
-          musicBtn.textContent = '🔊';
-          musicBtn.style.background = 'rgba(255,255,255,0.9)';
         }).catch(() => {});
+        musicOn = true;
       }
+      updateMusicUI();
     });
 
-    // 二维码 - 前端直接生成，避免服务端 URL 问题
+    // ==================== 二维码 ====================
     const sendUrl = location.origin + '/send.html';
     const qrImg = document.getElementById('qr-img');
     qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(sendUrl)}`;
     qrImg.onerror = () => {
-      // fallback: 用服务端生成
       fetch('/api/qrcode')
         .then(r => r.json())
         .then(data => { qrImg.src = data.qrcode; })
