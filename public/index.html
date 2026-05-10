@@ -425,8 +425,13 @@
       transition: width 1s linear; width: 100%;
     }
     #countdown-text {
-      text-align: center; font-size: 10px; font-weight: 600;
-      color: rgba(255,255,255,0.25); padding: 4px 0 6px;
+      text-align: center; font-size: 14px; font-weight: 700;
+      color: #E17055; padding: 4px 0 2px;
+      display: none; flex-shrink: 0;
+    }
+    #countdown-hint {
+      text-align: center; font-size: 11px; font-weight: 600;
+      color: rgba(255,255,255,0.3); padding: 0 0 4px;
       display: none; flex-shrink: 0;
     }
   </style>
@@ -466,6 +471,7 @@
     <div class="message-list" id="message-list" style="display:none;"></div>
     <div id="countdown-bar-wrap"><div id="countdown-bar"></div></div>
     <div id="countdown-text"></div>
+    <div id="countdown-hint">返回后悄悄话会重新上锁，再进来需要重新留言才能看到</div>
     <div class="input-bar">
       <input type="text" id="msg-input" maxlength="100" placeholder="你想说什么呢？" autocomplete="off">
       <button id="send-btn">发送</button>
@@ -522,6 +528,7 @@
     const countdownBarWrap = document.getElementById('countdown-bar-wrap');
     const countdownBar = document.getElementById('countdown-bar');
     const countdownText = document.getElementById('countdown-text');
+    const countdownHint = document.getElementById('countdown-hint');
     const msgInput = document.getElementById('msg-input');
     const sendBtn = document.getElementById('send-btn');
     const toast = document.getElementById('toast');
@@ -580,6 +587,7 @@
       preSendHint.style.display = 'flex';
       countdownBarWrap.style.display = 'none';
       countdownText.style.display = 'none';
+      countdownHint.style.display = 'none';
       stopCountdown();
       startIdleTimer();
     }
@@ -710,6 +718,7 @@
       countdownStartedAt = Date.now();
       countdownBarWrap.style.display = 'block';
       countdownText.style.display = 'block';
+      countdownHint.style.display = 'block';
       countdownBar.style.transition = 'none';
       countdownBar.style.width = '100%';
       updateCountdownUI();
