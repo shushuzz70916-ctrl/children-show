@@ -77,6 +77,31 @@
         radial-gradient(1.0px 1.0px at 32% 44%, rgba(255,225,150,0.4), transparent),
         radial-gradient(1.4px 1.4px at 68% 42%, rgba(255,230,155,0.55), transparent);
     }
+    /* 星星闪烁动画（缓慢呼吸，远近层不同节奏） */
+    @media (prefers-reduced-motion: no-preference) {
+      #starfield-deep {
+        animation: starBreatheDeep 8s ease-in-out infinite;
+      }
+      #starfield-mid {
+        animation: starBreatheMid 5s ease-in-out infinite;
+      }
+      #moon-ambient {
+        animation: ambientPulse 6s ease-in-out infinite;
+      }
+    }
+    @keyframes starBreatheDeep {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 0.75; }
+    }
+    @keyframes starBreatheMid {
+      0%, 100% { opacity: 0.88; }
+      33% { opacity: 1.0; }
+      66% { opacity: 0.85; }
+    }
+    @keyframes ambientPulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1.0; }
+    }
 
     /* ========== 月光环境光 ========== */
     #moon-ambient {
