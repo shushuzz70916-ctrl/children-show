@@ -4,7 +4,7 @@
 
 儿童艺术展-11：07pm 匿名留言互动系统：展览现场平板设备，观众选择 8 个生物角色之一，留言后查看该角色下所有人的历史留言。
 部署于 Render 公网，Node.js 单进程 HTTP 服务，SQLite 持久化存储。
-视觉风格：星空梦境 + 孟菲斯主题 — 深邃夜空背景 + 几何图案 + 满月元素 + 彩色偏移阴影面板。
+视觉风格：Starry Lullaby（星空摇篮）— 深蓝渐变背景 + 双层 CSS 暖金星场 + 满月 + 3D 立体卡片。
 
 ---
 
@@ -67,6 +67,7 @@ children-show/
 | `POST` | `/api/messages` | `{role, text}` | `{id, text, created_at}` 或 `{rejected: true}` | 含 AI 审核；限流 5次/IP/分钟 |
 | `DELETE` | `/api/messages/:id` | — | `{success: true}` | 删除单条留言（需 Bearer Token） |
 | `POST` | `/api/clear-messages` | — | `{success: true}` | 清空所有留言（需 Bearer Token） |
+| `POST` | `/api/admin/moderate-test` | `{text}` | `{configured, text, result}` | 测试内容审核 API（需 Bearer Token） |
 | `GET` | `/api/admin/messages` | — | `[{id, role, text, created_at}]` | 全量留言，按 id 降序（需 Bearer Token） |
 
 **鉴权方式**：管理接口需在请求头加 `Authorization: Bearer <ADMIN_TOKEN>`。
@@ -111,9 +112,9 @@ CREATE INDEX idx_created ON messages(created_at);
 
 ### View 1: 角色选择页
 
-- 标题：「你最想对哪个生物说些什么？」（ZCOOL KuaiLe 字体，暖金渐变发光）
-- 8 张角色卡片：2 列 × 4 行网格，孟菲斯面板（实色底 + 3px 白边框 + 紫色偏移阴影）
-- 每张卡片：角色图片/图标 + 名称 + 别名
+- 标题：「你最想对哪个生物说些什么？」（ZCOOL KuaiLe 字体，暖金发光）
+- 8 张角色卡片：2 列 × 4 行网格，星空面板（深蓝渐变底 + 暖金边框 + 顶边高光 + 多层阴影）
+- 每张卡片：角色图片/图标（56px）+ 名称（22px）+ 别名（15px）
 - 星星角色无图片，用 CSS 内联 SVG 五角星（黄色填充）
 - 点击卡片 → 进入 View 2
 
@@ -134,11 +135,12 @@ CREATE INDEX idx_created ON messages(created_at);
 ```
 
 **页面结构：**
-- 顶部导航栏：← 返回按钮 + 角色名/别名 + → 切换角色按钮
+- 顶部导航栏：← 返回按钮 + 角色名/别名（同行显示，26px/15px）+ → 切换角色按钮
 - 留言前提示区：锁图标 + 提示文字（留言列表隐藏）
-- 留言列表：`overflow-y: auto`，孟菲斯面板卡片，带文字和时间戳
-- 底部倒计时条：渐变进度条 + 「X 秒后自动返回首页」
-- 底部输入栏：固定底部，输入框 + 发送按钮
+- 留言列表：`overflow-y: auto`，星空面板卡片，带文字和时间戳
+- 底部倒计时条：暖金渐变进度条 + 红色大字「X 秒后自动返回首页」
+- 倒计时下方提示：「返回后悄悄话会重新上锁，再进来需要重新留言才能看到」（红色）
+- 底部输入栏：固定底部，毛玻璃渐变底，输入框 + 金色立体发送按钮
 
 **空闲保护：** 进入留言页后，2 分钟内无有效输入行为（键入/删除/粘贴）→ 自动返回选择页。每次 `input` 事件重置计时，仅焦点/点击不算。发送成功后切换为 60 秒倒计时主导。
 
@@ -150,16 +152,20 @@ CREATE INDEX idx_created ON messages(created_at);
 | 拒绝 | 红色 `#E17055` |
 | 错误 | 橙色 `#FF8E53` |
 
-### 视觉主题（孟菲斯 + 星空梦境，保留）
+### 视觉主题（Starry Lullaby，2026-05-10 重设计）
 
-- CSS 变量：`--pink`, `--yellow`, `--teal`, `--purple`, `--coral`, `--mint`, `--lavender`
-- 星空深紫渐变背景 + 波点纹理层
-- 50 个浮动几何图形画布（圆/三角/菱形/十字/环）
-- 满月：120px 暖黄圆 + 呼吸动画（左上角）
-- 2 个固定几何装饰（三角形 + 菱形）
-- 孟菲斯面板：实色深紫底 + 3px 白色实线边框 + 彩色偏移阴影
-- Nunito + ZCOOL KuaiLe 字体
-- 音乐开关按钮（右上角，仅角色选择页显示）
+- CSS 变量：`--bg-deep` `#060E24`, `--bg-mid` `#0D1A3E`, `--bg-light` `#142050`
+- 暖金单色系：`--gold` `#D4A030`, `--gold-light` `#FFE8A0`, `--gold-dark` `#C09028`
+- 背景：深蓝四段渐变，移除波点纹理和 canvas 几何动画
+- 星空：双层 CSS `radial-gradient` 点阵（`#starfield-deep` 远景暗星 + `#starfield-mid` 中景亮星），浓密暖金色
+- 满月：50px 暖黄圆 + 呼吸动画（右上角 `top:4%; right:8%`）
+- 月光环境光：180px 圆形暖黄径向渐变（`#moon-ambient`）
+- 星空面板：`linear-gradient(135deg, rgba(18,30,60,0.75), rgba(10,20,45,0.8))` + 1px 暖金边框 + 顶边高光 + 多层投影
+- 导航栏/输入栏：深蓝渐变底 + `backdrop-filter: blur(12px)` + 暖金分割线 + 独立投影
+- 发送按钮：金色立体渐变 `#E0B840 → #C09028` + 顶边高光线
+- 倒计时条：暖金渐变 + 金色发光，倒计时文字红色 14px 加粗
+- Nunito + Fredoka + ZCOOL KuaiLe 字体（不变）
+- 音乐开关按钮（右上角，仅角色选择页显示，暖金边框 + 深蓝底）
 
 ### 背景音乐
 
@@ -176,8 +182,7 @@ CREATE INDEX idx_created ON messages(created_at);
 - Build: `npm install`
 - Start: `node server.js`
 - 需在 Render 环境变量中填入 `DEEPSEEK_API_KEY` 和 `ADMIN_TOKEN`
-- **套餐：starter（$7/月）**，已在 render.yaml 配置持久磁盘挂载到 `/opt/render/project/src/data`（1 GB）
-- 如降回 free 套餐，持久磁盘不可用，服务重启后 messages.db 丢失
+- **当前套餐：free**（试用期），无持久磁盘，服务重启后 messages.db 丢失；正式使用时切回 starter + 挂载磁盘
 
 ---
 
@@ -198,6 +203,6 @@ CREATE INDEX idx_created ON messages(created_at);
 13. **← 返回按钮保留**：方便工作人员手动返回，也保留 → 切换按钮
 14. **不要用 emoji 做图标**（音乐按钮用 SVG、锁图标除外）
 15. **7 幅 PNG 同时保留 SVG 版本在 `assets/`**，PNG 用于线上渲染，SVG 给布展方备用
-16. **管理后台在 `/admin.html`**：需要 `ADMIN_TOKEN` 登录，token 存 sessionStorage（关 tab 即失效）；支持按角色筛选、逐条删除、清空
+16. **管理后台在 `/admin.html`**：需要 `ADMIN_TOKEN` 登录，token 存 sessionStorage（关 tab 即失效）；支持按角色筛选、逐条删除、清空、文字审核测试（调用 DeepSeek API 实时返回 pass/reject）
 17. **限流**：POST `/api/messages` 每个 IP 每分钟最多 5 条，超出返回 429
 18. **`created_at` 格式**：统一本地时间字符串 `YYYY-MM-DD HH:MM:SS`，前端 `formatTime()` 只显示时分秒
