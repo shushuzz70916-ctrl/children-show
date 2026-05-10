@@ -22,7 +22,7 @@
 - Modify: `public/index.html`
 - Reference: `docs/superpowers/specs/2026-05-10-idle-input-timeout-design.md`
 
-- [ ] **Step 1: Write the failing manual test checklist**
+- [x] **Step 1: Write the failing manual test checklist**
 
 Create this checklist before editing code:
 
@@ -40,7 +40,7 @@ Manual test checklist:
    Expected: the existing 60-second post-send countdown still appears and works.
 ```
 
-- [ ] **Step 2: Run the app to verify the current behavior fails the checklist**
+- [x] **Step 2: Run the app to verify the current behavior fails the checklist**
 
 Run:
 
@@ -52,7 +52,7 @@ Expected current failures:
 - In checklist item 2, the page can still return 2 minutes after entering the screen even if input activity happened earlier.
 - In checklist item 3, the timer is not clearly tied to the last input event.
 
-- [ ] **Step 3: Update the idle timer helper to mean “start or reset”**
+- [x] **Step 3: Update the idle timer helper to mean “start or reset”**
 
 In `public/index.html`, keep the existing `IDLE_TIMEOUT` and `idleTimer`, but make `startIdleTimer()` always clear the old timeout and create a fresh one:
 
@@ -75,7 +75,7 @@ function clearIdleTimer() {
 }
 ```
 
-- [ ] **Step 4: Reset the idle timer only when the input value changes**
+- [x] **Step 4: Reset the idle timer only when the input value changes**
 
 Add an `input` event listener near the existing `sendBtn` / `keydown` listeners in `public/index.html`:
 
@@ -89,7 +89,7 @@ msgInput.addEventListener('input', () => {
 
 This keeps `focus`, `click`, and other non-content interactions from extending the timer.
 
-- [ ] **Step 5: Keep message-screen entry behavior as the initial 2-minute window**
+- [x] **Step 5: Keep message-screen entry behavior as the initial 2-minute window**
 
 Ensure `showMessageView(roleIdx)` still starts the idle timer when the user first enters a role, so a child who never types still returns automatically:
 
@@ -114,7 +114,7 @@ function showMessageView(roleIdx) {
 }
 ```
 
-- [ ] **Step 6: Keep the post-send behavior unchanged**
+- [x] **Step 6: Keep the post-send behavior unchanged**
 
 Verify the send-success branch still clears the pre-send idle timer when the first successful message unlocks the list:
 
@@ -132,7 +132,7 @@ startCountdown();
 
 Do not merge the idle timer with `startCountdown()`.
 
-- [ ] **Step 7: Run the manual validation after the code change**
+- [x] **Step 7: Run the manual validation after the code change**
 
 Run:
 
@@ -152,7 +152,7 @@ Then test the browser against this exact checklist:
 
 Expected result: all five checks pass.
 
-- [ ] **Step 8: Commit the finished code change**
+- [x] **Step 8: Commit the finished code change**
 
 Run:
 
