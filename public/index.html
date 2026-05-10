@@ -80,26 +80,26 @@
     /* 星星闪烁动画（缓慢呼吸，远近层不同节奏） */
     @media (prefers-reduced-motion: no-preference) {
       #starfield-deep {
-        animation: starBreatheDeep 8s ease-in-out infinite;
+        animation: starBreatheDeep 7s ease-in-out infinite;
       }
       #starfield-mid {
-        animation: starBreatheMid 5s ease-in-out infinite;
+        animation: starBreatheMid 3.2s ease-in-out infinite;
       }
       #moon-ambient {
-        animation: ambientPulse 6s ease-in-out infinite;
+        animation: ambientPulse 5s ease-in-out infinite;
       }
     }
     @keyframes starBreatheDeep {
-      0%, 100% { opacity: 0.6; }
-      50% { opacity: 0.75; }
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 0.78; }
     }
     @keyframes starBreatheMid {
-      0%, 100% { opacity: 0.88; }
-      33% { opacity: 1.0; }
-      66% { opacity: 0.85; }
+      0%, 100% { opacity: 0.7; }
+      40% { opacity: 1.0; }
+      75% { opacity: 0.72; }
     }
     @keyframes ambientPulse {
-      0%, 100% { opacity: 0.7; }
+      0%, 100% { opacity: 0.5; }
       50% { opacity: 1.0; }
     }
 
