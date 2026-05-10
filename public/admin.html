@@ -224,12 +224,16 @@
     if (saved) { tokenInput.value = saved; doLogin(); }
 
     async function loadMessages() {
-      const res = await fetch('/api/admin/messages', {
-        headers: { 'Authorization': `Bearer ${adminToken}` }
-      });
-      if (!res.ok) return;
-      allMessages = await res.json();
-      render();
+      try {
+        const res = await fetch('/api/admin/messages', {
+          headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        if (!res.ok) return;
+        allMessages = await res.json();
+        render();
+      } catch {
+        // 网络错误静默保留现有数据
+      }
     }
 
     document.getElementById('refresh-btn').addEventListener('click', loadMessages);
