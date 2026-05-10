@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>儿童艺术展-11：07pm - 弹幕互动</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>儿童艺术展-11：07pm - 匿名留言板</title>
   <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Nunito:wght@400;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* ========== Memphis Design Tokens ========== */
@@ -26,13 +26,27 @@
     body {
       width: 100vw;
       height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       background: linear-gradient(150deg, #1a1040 0%, #1e1650 35%, #1a1040 65%, #150d35 100%);
       font-family: 'Nunito', 'Fredoka', 'PingFang SC', 'Microsoft YaHei', sans-serif;
       position: relative;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* ========== 几何图形背景画布 ========== */
+    /* ========== 波点背景 ========== */
+    #polka-bg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.06;
+      background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* ========== 几何背景画布（精简版） ========== */
     #geofield {
       position: absolute;
       top: 0; left: 0;
@@ -41,161 +55,71 @@
       pointer-events: none;
     }
 
-    /* ========== 满月 ========== */
+    /* ========== 满月（缩小版） ========== */
     #moon {
       position: absolute;
-      top: 6%;
-      left: 10%;
-      width: 200px;
-      height: 200px;
+      top: 4%;
+      left: 6%;
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
       background: radial-gradient(circle at 42% 42%, rgba(255,235,180,0.98) 0%, rgba(255,210,120,0.88) 35%, rgba(255,185,80,0.55) 65%, rgba(240,160,50,0.22) 100%);
       box-shadow:
-        0 0 50px rgba(255, 215, 100, 0.55),
-        0 0 120px rgba(255, 190, 60, 0.35),
-        0 0 220px rgba(255, 170, 30, 0.18),
-        0 0 380px rgba(255, 170, 30, 0.10),
-        0 0 600px rgba(255, 170, 30, 0.05);
+        0 0 30px rgba(255, 215, 100, 0.45),
+        0 0 80px rgba(255, 190, 60, 0.28),
+        0 0 150px rgba(255, 170, 30, 0.12);
       z-index: 1;
       pointer-events: none;
       animation: moonGlow 8s ease-in-out infinite;
     }
     @keyframes moonGlow {
-      0%, 100% { box-shadow: 0 0 50px rgba(255, 215, 100, 0.55), 0 0 120px rgba(255, 190, 60, 0.35), 0 0 220px rgba(255, 170, 30, 0.18), 0 0 380px rgba(255, 170, 30, 0.10), 0 0 600px rgba(255, 170, 30, 0.05); }
-      50% { box-shadow: 0 0 70px rgba(255, 215, 100, 0.68), 0 0 150px rgba(255, 190, 60, 0.48), 0 0 260px rgba(255, 170, 30, 0.26), 0 0 420px rgba(255, 170, 30, 0.15), 0 0 680px rgba(255, 170, 30, 0.08); }
-    }
-
-    /* ========== 弹幕层 ========== */
-    #danmaku-layer {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 10;
-    }
-    .danmaku-item {
-      position: absolute;
-      white-space: nowrap;
-      font-size: 28px;
-      font-weight: 700;
-      font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
-      text-shadow:
-        0 0 12px currentColor,
-        2px 2px 0 rgba(0,0,0,0.3);
-      animation: scroll-left linear forwards;
-      pointer-events: none;
-      letter-spacing: 0.02em;
-    }
-    @keyframes scroll-left {
-      0%   { transform: translateX(100vw); }
-      100% { transform: translateX(-100%); }
-    }
-
-    /* ========== 标题 ========== */
-    #title-area {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      z-index: 5;
-      pointer-events: none;
-    }
-    #title-area h1 {
-      font-family: 'ZCOOL KuaiLe', 'PingFang SC', sans-serif;
-      font-size: 78px;
-      white-space: nowrap;
-      letter-spacing: 0.12em;
-      color: #FFF8E7;
-      text-shadow:
-        0 0 30px rgba(255, 215, 100, 0.55),
-        0 0 80px rgba(255, 190, 60, 0.35),
-        0 0 160px rgba(255, 170, 30, 0.18),
-        0 4px 12px rgba(0,0,0,0.45);
-      -webkit-text-stroke: 1px rgba(255, 220, 160, 0.25);
-      animation: titleFloat 5s ease-in-out infinite;
-    }
-    @keyframes titleFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-12px); }
+      0%, 100% { box-shadow: 0 0 30px rgba(255, 215, 100, 0.45), 0 0 80px rgba(255, 190, 60, 0.28), 0 0 150px rgba(255, 170, 30, 0.12); }
+      50% { box-shadow: 0 0 45px rgba(255, 215, 100, 0.58), 0 0 100px rgba(255, 190, 60, 0.38), 0 0 180px rgba(255, 170, 30, 0.18); }
     }
 
     /* ========== 孟菲斯面板通用 ========== */
     .memphis-panel {
-      background: rgba(26, 16, 64, 0.92);
+      background: rgba(26, 16, 64, 0.94);
       border: var(--border-width) solid rgba(255,255,255,0.85);
-      box-shadow:
-        var(--shadow-offset) var(--shadow-offset) 0 var(--purple),
-        0 0 30px rgba(139,107,174,0.25);
+      box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--purple);
     }
 
-    /* ========== 输入区 ========== */
-    #input-area {
+    /* ========== 装饰几何元素 ========== */
+    .geo-triangle-tr {
       position: absolute;
-      top: calc(50% + 58px);
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 10px;
-      z-index: 20;
-      padding: 10px;
-      border-radius: 20px;
-      background: rgba(26, 16, 64, 0.92);
-      border: var(--border-width) solid rgba(255,255,255,0.85);
-      box-shadow:
-        var(--shadow-offset) var(--shadow-offset) 0 var(--teal),
-        0 0 30px rgba(134,204,202,0.2);
+      top: 3%;
+      right: 5%;
+      width: 50px;
+      height: 50px;
+      background: var(--teal);
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      opacity: 0.55;
+      z-index: 1;
+      pointer-events: none;
+      animation: geoFloat 7s ease-in-out infinite;
     }
-    #input-area input {
-      width: 340px;
-      padding: 12px 22px;
-      font-size: 18px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 14px;
-      outline: none;
-      font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
-      font-weight: 600;
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-    }
-    #input-area input::placeholder {
-      color: rgba(255,255,255,0.35);
-      font-weight: 400;
-    }
-    #input-area input:focus {
-      border-color: var(--pink);
-      background: rgba(255,255,255,0.16);
-      box-shadow: 0 0 0 4px rgba(255,113,206,0.2);
-    }
-    #input-area button {
-      padding: 12px 26px;
-      font-size: 18px;
-      border: var(--border-width) solid rgba(255,255,255,0.9);
-      border-radius: 14px;
+    .geo-diamond-bl {
+      position: absolute;
+      bottom: 12%;
+      left: 4%;
+      width: 38px;
+      height: 38px;
       background: var(--pink);
-      color: #fff;
-      cursor: pointer;
-      font-family: 'Fredoka', 'Nunito', 'PingFang SC', sans-serif;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-      box-shadow: 4px 4px 0 var(--yellow);
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      opacity: 0.5;
+      z-index: 1;
+      pointer-events: none;
+      animation: geoFloat 8s ease-in-out infinite;
     }
-    #input-area button:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0 var(--yellow);
-      background: #FF8BD8;
-    }
-    #input-area button:active {
-      transform: translate(2px, 2px);
-      box-shadow: 2px 2px 0 var(--yellow);
+    @keyframes geoFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-12px) rotate(6deg); }
     }
 
     /* ========== Toast ========== */
     #toast {
       position: absolute;
-      top: 110px;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%);
       padding: 12px 28px;
@@ -207,631 +131,707 @@
       display: none;
       border: var(--border-width) solid rgba(255,255,255,0.85);
       box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
-      animation: fadeInOut 2.5s ease forwards;
+      color: #fff;
     }
-    @keyframes fadeInOut {
+    @keyframes toastInOut {
       0%   { opacity: 0; transform: translateX(-50%) translateY(-10px); }
       15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
       75%  { opacity: 1; }
       100% { opacity: 0; }
     }
 
-    /* ========== 二维码卡片 ========== */
-    #qr-area {
-      position: absolute;
-      bottom: 28px;
-      right: 28px;
-      border-radius: 20px;
-      padding: 20px 20px 14px;
-      text-align: center;
-      z-index: 20;
-      background: rgba(26, 16, 64, 0.92);
-      border: var(--border-width) solid rgba(255,255,255,0.85);
-      box-shadow:
-        calc(-1 * var(--shadow-offset)) var(--shadow-offset) 0 var(--pink),
-        0 0 30px rgba(255,113,206,0.2);
-    }
-    #qr-area img {
-      width: 130px;
-      height: 130px;
-      display: block;
-      border-radius: 10px;
-      background: #fff;
-      padding: 4px;
-      border: 2px solid var(--purple);
-    }
-    #qr-area p {
-      margin-top: 10px;
-      font-size: 13px;
-      color: rgba(255,255,255,0.8);
-      font-family: 'Fredoka', 'Nunito', 'PingFang SC', sans-serif;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-    }
-
     /* ========== 音乐开关 ========== */
     #music-btn {
       position: absolute;
-      top: 36px;
-      right: 28px;
-      width: 48px;
-      height: 48px;
+      top: 24px;
+      right: 24px;
+      width: 44px;
+      height: 44px;
       border-radius: 14px;
       border: var(--border-width) solid rgba(255,255,255,0.85);
       background: rgba(26, 16, 64, 0.92);
       cursor: pointer;
       z-index: 20;
       box-shadow: 4px 4px 0 var(--coral);
-      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+      transition: transform 0.15s, box-shadow 0.15s;
       display: flex;
       align-items: center;
       justify-content: center;
       color: rgba(255,255,255,0.9);
     }
-    #music-btn:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0 var(--coral);
-    }
     #music-btn:active {
       transform: translate(2px, 2px);
       box-shadow: 2px 2px 0 var(--coral);
     }
-    #music-btn svg {
-      width: 20px;
-      height: 20px;
-    }
+    #music-btn svg { width: 18px; height: 18px; }
 
-    /* ========== 装饰性几何元素 ========== */
-    /* 右上角三角形 */
-    .geo-triangle-tr {
-      position: absolute;
-      top: 3%;
-      right: 6%;
-      width: 80px;
-      height: 80px;
-      background: var(--teal);
-      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-      opacity: 0.7;
-      z-index: 1;
-      pointer-events: none;
-      animation: geoFloat1 7s ease-in-out infinite;
-      border: none;
-    }
-    /* 左下角菱形 */
-    .geo-diamond-bl {
-      position: absolute;
-      bottom: 15%;
-      left: 5%;
-      width: 50px;
-      height: 50px;
-      background: var(--pink);
-      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-      opacity: 0.65;
-      z-index: 1;
-      pointer-events: none;
-      animation: geoFloat2 8s ease-in-out infinite;
-    }
-    /* 中左波浪线 */
-    .geo-squiggle-ml {
-      position: absolute;
-      top: 35%;
-      left: 3%;
-      width: 120px;
-      height: 30px;
-      z-index: 1;
-      pointer-events: none;
-      opacity: 0.5;
-      animation: geoFloat3 9s ease-in-out infinite;
-    }
-    /* 右中小圆点组 */
-    .geo-dots-mr {
-      position: absolute;
-      top: 40%;
-      right: 4%;
-      width: 60px;
-      height: 80px;
-      z-index: 1;
-      pointer-events: none;
-      opacity: 0.55;
-      animation: geoFloat1 6s ease-in-out infinite;
-    }
-    /* 底部中三角形 */
-    .geo-triangle-bc {
-      position: absolute;
-      bottom: 8%;
-      left: 50%;
-      width: 45px;
-      height: 45px;
-      background: var(--coral);
-      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-      opacity: 0.6;
-      z-index: 1;
-      pointer-events: none;
-      animation: geoFloat2 7.5s ease-in-out infinite;
-    }
-    @keyframes geoFloat1 {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      33% { transform: translateY(-12px) rotate(5deg); }
-      66% { transform: translateY(8px) rotate(-3deg); }
-    }
-    @keyframes geoFloat2 {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-15px) rotate(8deg); }
-    }
-    @keyframes geoFloat3 {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    /* ========== 波点背景图案层 ========== */
-    #polka-bg {
+    /* ========== View 1: 角色选择页 ========== */
+    #view-roles {
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      z-index: 0;
-      pointer-events: none;
-      opacity: 0.06;
-      background-image:
-        radial-gradient(circle, #fff 1px, transparent 1px);
-      background-size: 24px 24px;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 5vw;
     }
 
-    /* ========== 链接提示 ========== */
-    #link-hint {
-      position: absolute;
-      bottom: 28px;
-      left: 28px;
-      color: rgba(255,255,255,0.45);
+    #view-roles h1 {
+      font-family: 'ZCOOL KuaiLe', 'PingFang SC', sans-serif;
+      font-size: clamp(32px, 5vw, 52px);
+      text-align: center;
+      line-height: 1.5;
+      color: #FFF8E7;
+      text-shadow:
+        0 0 30px rgba(255, 215, 100, 0.5),
+        0 0 80px rgba(255, 190, 60, 0.3),
+        0 4px 12px rgba(0,0,0,0.4);
+      -webkit-text-stroke: 1px rgba(255, 220, 160, 0.2);
+      margin-bottom: 32px;
+      pointer-events: none;
+    }
+
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .role-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .role-card:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--purple);
+    }
+
+    .role-card .card-img {
+      width: 64px;
+      height: 64px;
+      border-radius: 14px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+    .role-card .card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .role-card .card-img img.multiply { mix-blend-mode: multiply; }
+    .role-card .card-img img.screen { mix-blend-mode: screen; }
+
+    .role-card .card-text .name {
+      font-size: 19px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.04em;
+      font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
+      line-height: 1.3;
+    }
+    .role-card .card-text .alias {
       font-size: 13px;
-      z-index: 20;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.02em;
+      margin-top: 2px;
+    }
+
+    /* ========== View 2: 留言页 ========== */
+    #view-messages {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 5;
+      display: none;
+      flex-direction: column;
+    }
+
+    /* 导航栏 */
+    .nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      flex-shrink: 0;
+      z-index: 6;
+      background: rgba(26, 16, 64, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 2px solid rgba(255,255,255,0.15);
+    }
+    .nav-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: var(--border-width) solid rgba(255,255,255,0.7);
+      background: rgba(26, 16, 64, 0.9);
+      color: rgba(255,255,255,0.85);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      transition: transform 0.12s, box-shadow 0.12s;
+      box-shadow: 3px 3px 0 var(--purple);
+      flex-shrink: 0;
+      font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-btn:active {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0 var(--purple);
+    }
+    .nav-center {
+      text-align: center;
+      flex: 1;
+      min-width: 0;
+      padding: 0 8px;
+    }
+    .nav-center .role-name {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.05em;
+      font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
+    }
+    .nav-center .role-alias {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.45);
+      margin-top: 2px;
+    }
+
+    /* 留言列表 */
+    .message-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .message-list:empty::after {
+      content: '还没有留言，来说第一句吧';
+      display: block;
+      text-align: center;
+      color: rgba(255,255,255,0.3);
+      font-size: 15px;
+      font-weight: 600;
+      padding-top: 60px;
+    }
+
+    .msg-card {
+      padding: 14px 18px;
+      border-radius: 16px;
+      animation: msgIn 0.3s ease-out;
+    }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .msg-card .msg-text {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .msg-card .msg-time {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.35);
+      margin-top: 6px;
+    }
+
+    /* 输入栏 */
+    .input-bar {
+      display: flex;
+      gap: 10px;
+      padding: 14px 20px;
+      padding-bottom: max(14px, env(safe-area-inset-bottom));
+      flex-shrink: 0;
+      background: rgba(26, 16, 64, 0.88);
+      backdrop-filter: blur(10px);
+      border-top: 2px solid rgba(255,255,255,0.15);
+      z-index: 6;
+    }
+    .input-bar input {
+      flex: 1;
+      padding: 13px 18px;
+      font-size: 17px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 14px;
+      outline: none;
       font-family: 'Nunito', 'Fredoka', 'PingFang SC', sans-serif;
       font-weight: 600;
-      pointer-events: none;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      min-width: 0;
+    }
+    .input-bar input::placeholder {
+      color: rgba(255,255,255,0.3);
+      font-weight: 400;
+    }
+    .input-bar input:focus {
+      border-color: var(--pink);
+      box-shadow: 0 0 0 4px rgba(255,113,206,0.2);
+    }
+    .input-bar button {
+      padding: 13px 22px;
+      font-size: 17px;
+      border: var(--border-width) solid rgba(255,255,255,0.9);
+      border-radius: 14px;
+      background: var(--pink);
+      color: #fff;
+      cursor: pointer;
+      font-family: 'Fredoka', 'Nunito', 'PingFang SC', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+      box-shadow: 4px 4px 0 var(--yellow);
+      flex-shrink: 0;
+    }
+    .input-bar button:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--yellow);
+      background: #FF8BD8;
     }
 
-    /* ========== 浮动儿童画廊 ========== */
-    #gallery-layer {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: 2;
-      pointer-events: none;
-      overflow: hidden;
+    /* 空状态提示 */
+    .empty-hint {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: rgba(255,255,255,0.3);
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
     }
 
-    .art-frame {
-      position: absolute;
-      opacity: 0.75;
-      will-change: transform;
+    /* 留言前提示 */
+    #pre-send-hint {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      text-align: center;
+      flex: 1;
+    }
+    #pre-send-hint .hint-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+      opacity: 0.7;
+    }
+    #pre-send-hint .hint-text {
+      color: rgba(255,255,255,0.4);
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.6;
     }
 
-    .art-frame img {
+    /* 倒计时条 */
+    #countdown-bar-wrap {
+      flex-shrink: 0;
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      display: none;
+    }
+    #countdown-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--yellow), var(--pink));
+      transition: width 1s linear;
       width: 100%;
-      height: auto;
-      display: block;
-      filter: drop-shadow(0 6px 20px rgba(0,0,0,0.45));
     }
-
+    #countdown-text {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.3);
+      padding: 4px 0 8px;
+      display: none;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
 
-  <!-- 波点背景 -->
   <div id="polka-bg"></div>
-
-  <!-- 浮动儿童画廊 -->
-  <div id="gallery-layer"></div>
-
-  <!-- 几何图形背景 -->
   <canvas id="geofield"></canvas>
-
-  <!-- 孟菲斯太阳 -->
   <div id="moon"></div>
-
-  <!-- 装饰几何元素 -->
   <div class="geo-triangle-tr"></div>
   <div class="geo-diamond-bl"></div>
-  <svg class="geo-squiggle-ml" viewBox="0 0 120 30" fill="none">
-    <path d="M0,15 Q15,2 30,15 Q45,28 60,15 Q75,2 90,15 Q105,28 120,15"
-          stroke="#FFCE5C" stroke-width="3" stroke-linecap="round"/>
-  </svg>
-  <svg class="geo-dots-mr" viewBox="0 0 60 80">
-    <circle cx="15" cy="12" r="5" fill="#FF71CE"/>
-    <circle cx="35" cy="12" r="5" fill="#FF71CE"/>
-    <circle cx="15" cy="32" r="5" fill="#86CCCA"/>
-    <circle cx="35" cy="32" r="5" fill="#86CCCA"/>
-    <circle cx="15" cy="52" r="5" fill="#FFCE5C"/>
-    <circle cx="35" cy="52" r="5" fill="#FFCE5C"/>
-    <circle cx="25" cy="72" r="5" fill="#FF6B6B"/>
-  </svg>
-  <div class="geo-triangle-bc"></div>
 
   <!-- 背景音乐 -->
-  <audio id="bgm" loop preload="auto"
-         src="children-light-music.mp3">
-  </audio>
+  <audio id="bgm" loop preload="auto" src="children-light-music.mp3"></audio>
 
-  <!-- 弹幕层 -->
-  <div id="danmaku-layer"></div>
-
-  <!-- 标题 -->
-  <div id="title-area">
-    <h1>儿童艺术展-11：07pm</h1>
+  <!-- ========== View 1: 角色选择 ========== -->
+  <div id="view-roles">
+    <h1>你最想对哪个生物<br>说些什么？</h1>
+    <div class="roles-grid" id="roles-grid"></div>
   </div>
 
-  <!-- 输入框 -->
-  <div id="input-area">
-    <input id="danmaku-input" type="text" maxlength="100"
-           placeholder="输入弹幕，一起互动吧~" autofocus>
-    <button id="send-btn">发送</button>
+  <!-- ========== View 2: 留言页 ========== -->
+  <div id="view-messages">
+    <div class="nav-bar">
+      <button class="nav-btn" id="nav-back" title="返回">←</button>
+      <div class="nav-center">
+        <div class="role-name" id="nav-role-name"></div>
+        <div class="role-alias" id="nav-role-alias"></div>
+      </div>
+      <button class="nav-btn" id="nav-next" title="切换角色">→</button>
+    </div>
+    <div id="pre-send-hint">
+      <div class="hint-icon">🔒</div>
+      <div class="hint-text">先留言，才能看到<br>大家的悄悄话哦</div>
+    </div>
+    <div class="message-list" id="message-list" style="display:none;"></div>
+    <div id="countdown-bar-wrap"><div id="countdown-bar"></div></div>
+    <div id="countdown-text"></div>
+    <div class="input-bar">
+      <input type="text" id="msg-input" maxlength="100" placeholder="你想说什么呢？" autocomplete="off">
+      <button id="send-btn">发送</button>
+    </div>
   </div>
 
-  <!-- 提示 -->
+  <!-- Toast -->
   <div id="toast"></div>
-
-  <!-- 二维码 -->
-  <div id="qr-area">
-    <img id="qr-img" src="" alt="扫码发送弹幕">
-    <p>扫码发送弹幕</p>
-  </div>
 
   <!-- 音乐开关 -->
   <button id="music-btn" title="音乐开关">
-    <svg id="music-icon-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <svg id="music-icon-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
       <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
       <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
     </svg>
-    <svg id="music-icon-off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+    <svg id="music-icon-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
       <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
       <line x1="23" y1="9" x2="17" y2="15"></line>
       <line x1="17" y1="9" x2="23" y2="15"></line>
     </svg>
   </button>
 
-  <!-- 链接 -->
-  <div id="link-hint" style="display:none;">
-    手机发送：<span id="send-url-text"></span>
-  </div>
-
   <script>
-    // ==================== 孟菲斯几何背景 ====================
-    const geofield = document.getElementById('geofield');
-    const geoCtx = geofield.getContext('2d');
-    let geoShapes = [];
-    const SHAPE_COUNT = 100;
-
-    const memphisColors = [
-      '#FF71CE', '#FFCE5C', '#86CCCA', '#8B6BAE',
-      '#FF6B6B', '#7ECB9A', '#B8A9E8', '#FFB347',
+    // ==================== 角色数据 ====================
+    const ROLES = [
+      { id: 'tree',      name: '树干',   alias: '权力中心',       image: 'assets/大树.png', blend: 'multiply' },
+      { id: 'moon',      name: '月亮',   alias: '权力跟班',       image: 'assets/月亮.png', blend: '' },
+      { id: 'star',      name: '星星',   alias: '冷眼小队',       image: null,              blend: '' },
+      { id: 'birdnest',  name: '鸟巢',   alias: '谣言加工厂',     image: 'assets/鸟巢.png', blend: 'screen' },
+      { id: 'falcon',    name: '乌隼',   alias: '悄悄话拆散王',   image: 'assets/乌隼.png', blend: '' },
+      { id: 'wind',      name: '风',     alias: '隐形谣言扩音器', image: 'assets/风.png',   blend: '' },
+      { id: 'chameleon', name: '变色龙', alias: '',               image: 'assets/变色龙.png', blend: '' },
+      { id: 'air',       name: '空气',   alias: '',               image: 'assets/空气.png', blend: '' },
     ];
 
-    function resizeGeofield() {
-      geofield.width = window.innerWidth;
-      geofield.height = window.innerHeight;
-    }
+    let currentRoleIdx = -1;
 
-    function drawTriangle(ctx, cx, cy, size, rotation) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(rotation);
-      ctx.beginPath();
-      ctx.moveTo(0, -size);
-      ctx.lineTo(-size * 0.866, size * 0.5);
-      ctx.lineTo(size * 0.866, size * 0.5);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-    }
-
-    function drawDiamond(ctx, cx, cy, size, rotation) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(rotation);
-      ctx.beginPath();
-      ctx.moveTo(0, -size);
-      ctx.lineTo(size * 0.7, 0);
-      ctx.lineTo(0, size);
-      ctx.lineTo(-size * 0.7, 0);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-    }
-
-    function drawCross(ctx, cx, cy, size, rotation) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(rotation);
-      const w = size * 0.35;
-      ctx.fillRect(-size * 0.7, -w, size * 1.4, w * 2);
-      ctx.fillRect(-w, -size * 0.7, w * 2, size * 1.4);
-      ctx.restore();
-    }
-
-    function drawRing(ctx, cx, cy, size) {
-      ctx.beginPath();
-      ctx.arc(cx, cy, size, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-
-    function createGeoShapes() {
-      geoShapes = [];
-      for (let i = 0; i < SHAPE_COUNT; i++) {
-        const type = Math.floor(Math.random() * 5); // 0:circle, 1:triangle, 2:diamond, 3:cross, 4:ring
-        geoShapes.push({
-          type,
-          x: Math.random() * geofield.width,
-          y: Math.random() * geofield.height,
-          size: Math.random() * 10 + 3,
-          color: memphisColors[Math.floor(Math.random() * memphisColors.length)],
-          baseAlpha: Math.random() * 0.22 + 0.08,
-          rotation: Math.random() * Math.PI * 2,
-          rotSpeed: (Math.random() - 0.5) * 0.004,
-          floatSpeed: Math.random() * 0.015 + 0.003,
-          floatPhase: Math.random() * Math.PI * 2,
-        });
-      }
-    }
-
-    function drawGeoShapes() {
-      geoCtx.clearRect(0, 0, geofield.width, geofield.height);
-      const t = Date.now() / 1000;
-
-      for (const s of geoShapes) {
-        const yOffset = Math.sin(t * s.floatSpeed * 8 + s.floatPhase) * 8;
-        const alpha = s.baseAlpha + Math.sin(t * 0.7 + s.floatPhase) * 0.05;
-        geoCtx.globalAlpha = Math.max(0.04, Math.min(0.35, alpha));
-        geoCtx.fillStyle = s.color;
-        geoCtx.strokeStyle = s.color;
-        geoCtx.lineWidth = 1.5;
-
-        const rot = s.rotation + t * s.rotSpeed;
-        const dy = s.y + yOffset;
-
-        switch (s.type) {
-          case 0: // circle
-            geoCtx.beginPath();
-            geoCtx.arc(s.x, dy, s.size, 0, Math.PI * 2);
-            geoCtx.fill();
-            break;
-          case 1: // triangle
-            drawTriangle(geoCtx, s.x, dy, s.size, rot);
-            break;
-          case 2: // diamond
-            drawDiamond(geoCtx, s.x, dy, s.size, rot);
-            break;
-          case 3: // cross
-            drawCross(geoCtx, s.x, dy, s.size, rot);
-            break;
-          case 4: // ring
-            drawRing(geoCtx, s.x, dy, s.size);
-            break;
-        }
-      }
-      geoCtx.globalAlpha = 1;
-      requestAnimationFrame(drawGeoShapes);
-    }
-
-    resizeGeofield();
-    createGeoShapes();
-    drawGeoShapes();
-    window.addEventListener('resize', () => {
-      resizeGeofield();
-      createGeoShapes();
-    });
-
-    // ==================== WebSocket ====================
-    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    let ws;
-    let wsReconnectTimer = null;
-
-    const danmakuLayer = document.getElementById('danmaku-layer');
-    const input = document.getElementById('danmaku-input');
+    // ==================== DOM refs ====================
+    const viewRoles = document.getElementById('view-roles');
+    const viewMessages = document.getElementById('view-messages');
+    const rolesGrid = document.getElementById('roles-grid');
+    const messageList = document.getElementById('message-list');
+    const preSendHint = document.getElementById('pre-send-hint');
+    const countdownBarWrap = document.getElementById('countdown-bar-wrap');
+    const countdownBar = document.getElementById('countdown-bar');
+    const countdownText = document.getElementById('countdown-text');
+    const msgInput = document.getElementById('msg-input');
     const sendBtn = document.getElementById('send-btn');
     const toast = document.getElementById('toast');
+    const navBack = document.getElementById('nav-back');
+    const navNext = document.getElementById('nav-next');
+    const navRoleName = document.getElementById('nav-role-name');
+    const navRoleAlias = document.getElementById('nav-role-alias');
     const bgm = document.getElementById('bgm');
     const musicBtn = document.getElementById('music-btn');
     const musicIconOn = document.getElementById('music-icon-on');
     const musicIconOff = document.getElementById('music-icon-off');
 
-    // ==================== 弹幕系统 ====================
-    const colors = [
-      '#FF71CE', '#FFCE5C', '#86CCCA', '#8B6BAE',
-      '#FF6B6B', '#7ECB9A', '#B8A9E8', '#FFB347',
-      '#FF8E72', '#4ECDC4', '#FF69B4', '#87CEEB',
-      '#F7DC6F', '#82E0AA', '#F8A5C2', '#AED6F1',
-    ];
-    function getRandomColor() {
-      return colors[Math.floor(Math.random() * colors.length)];
-    }
-
-    const TOP_MARGIN = 80;
-    const BOTTOM_MARGIN = 140;
-    const ROW_HEIGHT = 50;
-    const TARGET_MIN = 10;
-    const TARGET_MAX = 20;
-    const MIN_DURATION = 18;
-    const MAX_DURATION = 26;
-    const LAUNCH_COOLDOWN = 1800;
-
-    let rowCount;
-    let rowFreeAt;
-
-    function recalcRows() {
-      const availH = window.innerHeight - TOP_MARGIN - BOTTOM_MARGIN;
-      rowCount = Math.max(8, Math.floor(availH / ROW_HEIGHT));
-      rowFreeAt = new Array(rowCount).fill(0);
-    }
-    recalcRows();
-    window.addEventListener('resize', recalcRows);
-
-    let danmakuHistory = [];
-    let historyCursor = 0;
-    let activeCount = 0;
-    let lastLaunchTime = 0;
-    let maintainTimer = null;
-
-    function findFreeRow() {
-      const now = Date.now();
-      let best = 0;
-      for (let i = 1; i < rowCount; i++) {
-        if (rowFreeAt[i] < rowFreeAt[best]) best = i;
-      }
-      return { row: best, wait: Math.max(0, rowFreeAt[best] - now) };
-    }
-
-    function pickRow(urgent) {
-      const now = Date.now();
-      if (urgent) {
-        const freeRows = [];
-        for (let i = 0; i < rowCount; i++) {
-          if (rowFreeAt[i] <= now) freeRows.push(i);
-        }
-        if (freeRows.length > 0) {
-          return { row: freeRows[Math.floor(Math.random() * freeRows.length)], delay: 0 };
-        }
-      }
-      const found = findFreeRow();
-      return { row: found.row, delay: Math.min(found.wait, 3000) };
-    }
-
-    function launchOne(text, urgent) {
-      const { row, delay } = pickRow(urgent);
-      rowFreeAt[row] = Math.max(rowFreeAt[row], Date.now() + LAUNCH_COOLDOWN);
-
-      setTimeout(() => {
-        const el = document.createElement('div');
-        el.className = 'danmaku-item';
-        el.textContent = text;
-        el.style.color = getRandomColor();
-        el.style.top = (TOP_MARGIN + row * ROW_HEIGHT) + 'px';
-
-        const duration = MIN_DURATION + Math.random() * (MAX_DURATION - MIN_DURATION);
-        el.style.animationDuration = duration + 's';
-
-        danmakuLayer.appendChild(el);
-        activeCount++;
-        lastLaunchTime = Date.now();
-
-        const ms = duration * 1000;
-        setTimeout(() => {
-          el.remove();
-          activeCount--;
-          scheduleMaintain(200);
-        }, ms + 500);
-      }, delay);
-    }
-
-    function scheduleMaintain(delay) {
-      clearTimeout(maintainTimer);
-      maintainTimer = setTimeout(maintainScreen, delay);
-    }
-
-    function maintainScreen() {
-      clearTimeout(maintainTimer);
-
-      if (activeCount >= TARGET_MIN) {
-        maintainTimer = setTimeout(maintainScreen, 2000);
-        return;
-      }
-
-      if (danmakuHistory.length === 0) {
-        maintainTimer = setTimeout(maintainScreen, 1500);
-        return;
-      }
-
-      if (Date.now() - lastLaunchTime < LAUNCH_COOLDOWN) {
-        maintainTimer = setTimeout(maintainScreen, LAUNCH_COOLDOWN - (Date.now() - lastLaunchTime));
-        return;
-      }
-
-      const text = danmakuHistory[historyCursor % danmakuHistory.length];
-      historyCursor++;
-      launchOne(text);
-
-      maintainTimer = setTimeout(maintainScreen, LAUNCH_COOLDOWN);
-    }
+    // ==================== 星星 SVG 图标 ====================
+    const STAR_SVG = `<svg width="36" height="36" viewBox="0 0 40 40" fill="none">
+      <polygon points="20,4 25,15 37,17 28,26 30,38 20,32 10,38 12,26 3,17 15,15"
+        fill="#FFCE5C" stroke="#FFB347" stroke-width="1.5"
+        stroke-linejoin="round"/>
+    </svg>`;
 
     // ==================== Toast ====================
     let toastTimer;
-    function showToast(msg, bg = '#FF6B6B') {
+    function showToast(msg, bg) {
       clearTimeout(toastTimer);
       toast.textContent = msg;
       toast.style.background = bg;
-      toast.style.color = '#fff';
       toast.style.display = 'block';
       toast.style.animation = 'none';
       toast.offsetHeight;
-      toast.style.animation = 'fadeInOut 2.5s ease forwards';
+      toast.style.animation = 'toastInOut 2.5s ease forwards';
       toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 2500);
     }
 
-    // ==================== 发送弹幕 ====================
-    function sendDanmaku() {
-      const text = input.value.trim();
-      if (!text) return showToast('请输入弹幕内容', '#FF8E53');
-      if (text.length > 100) return showToast('内容不能超过100字', '#FF8E53');
-      if (!ws || ws.readyState !== WebSocket.OPEN) {
-        return showToast('连接已断开，正在重连...', '#E17055');
-      }
-      ws.send(JSON.stringify({ type: 'danmaku', text }));
-      input.value = '';
-      showToast('审核中...', '#45B7D1');
+    // ==================== 视图切换 ====================
+    function showRolesView() {
+      stopCountdown();
+      clearIdleTimer();
+      viewMessages.style.display = 'none';
+      viewRoles.style.display = 'flex';
+      musicBtn.style.display = 'flex';
+      currentRoleIdx = -1;
     }
-    sendBtn.addEventListener('click', sendDanmaku);
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') sendDanmaku();
+
+    function showMessageView(roleIdx) {
+      currentRoleIdx = roleIdx;
+      const role = ROLES[roleIdx];
+      navRoleName.textContent = role.name;
+      navRoleAlias.textContent = role.alias || ' ';
+      viewRoles.style.display = 'none';
+      viewMessages.style.display = 'flex';
+      musicBtn.style.display = 'none';
+      msgInput.value = '';
+
+      // 隐藏留言列表和倒计时，显示留言前提示
+      messageList.style.display = 'none';
+      messageList.innerHTML = '';
+      preSendHint.style.display = 'flex';
+      countdownBarWrap.style.display = 'none';
+      countdownText.style.display = 'none';
+      stopCountdown();
+      startIdleTimer();
+    }
+
+    // ==================== 加载留言 ====================
+    async function loadMessages(roleId) {
+      messageList.innerHTML = '';
+      try {
+        const res = await fetch(`/api/messages/${roleId}`);
+        const msgs = await res.json();
+        if (!Array.isArray(msgs) || msgs.length === 0) {
+          messageList.innerHTML = '<div class="empty-hint">还没有留言，来说第一句吧</div>';
+          return;
+        }
+        msgs.forEach(m => appendMessage(m, false));
+        messageList.scrollTop = messageList.scrollHeight;
+      } catch (err) {
+        messageList.innerHTML = '<div class="empty-hint">加载失败，请刷新页面</div>';
+      }
+    }
+
+    function appendMessage(m, animate) {
+      // Remove empty hint if present
+      const hint = messageList.querySelector('.empty-hint');
+      if (hint) hint.remove();
+
+      const card = document.createElement('div');
+      card.className = 'msg-card memphis-panel';
+      if (!animate) card.style.animation = 'none';
+      card.innerHTML = `
+        <div class="msg-text">${escapeHtml(m.text)}</div>
+        <div class="msg-time">${formatTime(m.created_at)}</div>
+      `;
+      messageList.appendChild(card);
+      messageList.scrollTop = messageList.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function formatTime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const pad = n => String(n).padStart(2, '0');
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+
+    // ==================== 发送留言 ====================
+    async function sendMessage() {
+      const text = msgInput.value.trim();
+      if (!text) return showToast('请输入留言内容', '#FF8E53');
+      if (text.length > 100) return showToast('内容不能超过100字', '#FF8E53');
+      if (currentRoleIdx < 0) return;
+
+      const role = ROLES[currentRoleIdx];
+      showToast('审核中...', '#45B7D1');
+      msgInput.value = '';
+
+      try {
+        const res = await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: role.id, text }),
+        });
+        const data = await res.json();
+        if (data.rejected) {
+          showToast('内容不适合，请重新输入', '#E17055');
+        } else if (data.id) {
+          // 首次发送成功 → 展示留言列表
+          if (preSendHint.style.display !== 'none') {
+            clearIdleTimer();
+            preSendHint.style.display = 'none';
+            messageList.style.display = 'flex';
+            await loadMessages(role.id);
+          } else {
+            appendMessage(data, true);
+          }
+          startCountdown();
+        } else {
+          showToast(data.error || '发送失败', '#FF8E53');
+        }
+      } catch (err) {
+        showToast('网络错误，请重试', '#FF8E53');
+      }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    msgInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+    // Reset idle timer on any real input (typing/deleting/paste), not just focus
+    msgInput.addEventListener('input', () => {
+      if (currentRoleIdx >= 0 && preSendHint.style.display !== 'none') {
+        startIdleTimer();
+      }
     });
 
-    // ==================== WebSocket ====================
-    function connectWS() {
-      if (ws) {
-        ws.onopen = null;
-        ws.onmessage = null;
-        ws.onclose = null;
-        ws.onerror = null;
-      }
-      ws = new WebSocket(`${protocol}//${location.host}`);
+    // ==================== 倒计时系统 ====================
+    const DISPLAY_DURATION = 60; // 展示留言的秒数
+    let countdownTimer = null;
+    let countdownRemaining = 0;
+    let countdownStartedAt = 0;
 
-      ws.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
-        if (msg.type === 'history') {
-          const texts = msg.data.map(d => d.text);
-          if (texts.length > 0) {
-            danmakuHistory = texts;
-            const burst = Math.min(TARGET_MAX, texts.length);
-            for (let i = 0; i < burst; i++) {
-              setTimeout(() => launchOne(texts[i % texts.length]), i * 600);
-            }
-            historyCursor = burst;
-            scheduleMaintain(burst * 600 + LAUNCH_COOLDOWN);
-          }
-        } else if (msg.type === 'new_danmaku') {
-          danmakuHistory.push(msg.data.text);
-          launchOne(msg.data.text, true);
-        } else if (msg.type === 'clear') {
-          danmakuHistory = [];
-          historyCursor = 0;
-          document.querySelectorAll('.danmaku-item').forEach(el => el.remove());
-          activeCount = 0;
-        } else if (msg.type === 'rejected') {
-          showToast(msg.message, '#E17055');
-        } else if (msg.type === 'error') {
-          showToast(msg.message, '#FF8E53');
-        }
-      };
-
-      ws.onclose = () => {
-        showToast('连接断开，3秒后自动重连...', '#E17055');
-        clearTimeout(wsReconnectTimer);
-        wsReconnectTimer = setTimeout(connectWS, 3000);
-      };
-
-      ws.onerror = () => {
-        // onclose will fire after this, triggering reconnect
-      };
+    function startCountdown() {
+      stopCountdown();
+      countdownRemaining = DISPLAY_DURATION;
+      countdownStartedAt = Date.now();
+      countdownBarWrap.style.display = 'block';
+      countdownText.style.display = 'block';
+      countdownBar.style.transition = 'none';
+      countdownBar.style.width = '100%';
+      updateCountdownUI();
+      tickCountdown();
     }
-    connectWS();
+
+    function tickCountdown() {
+      const elapsed = (Date.now() - countdownStartedAt) / 1000;
+      countdownRemaining = Math.max(0, DISPLAY_DURATION - elapsed);
+      updateCountdownUI();
+
+      if (countdownRemaining <= 0) {
+        stopCountdown();
+        showRolesView();
+        return;
+      }
+      countdownTimer = setTimeout(tickCountdown, 200);
+    }
+
+    function updateCountdownUI() {
+      const pct = (countdownRemaining / DISPLAY_DURATION) * 100;
+      if (countdownRemaining <= 0) {
+        countdownBar.style.transition = 'none';
+        countdownBar.style.width = '0%';
+      } else {
+        countdownBar.style.transition = 'width 0.2s linear';
+        countdownBar.style.width = pct + '%';
+      }
+      const sec = Math.ceil(countdownRemaining);
+      countdownText.textContent = sec + ' 秒后自动返回首页';
+    }
+
+    function stopCountdown() {
+      clearTimeout(countdownTimer);
+      countdownTimer = null;
+    }
+
+    // ==================== 空闲超时 ====================
+    const IDLE_TIMEOUT = 120; // 进入留言页但不发消息，2分钟后自动返回
+    let idleTimer = null;
+
+    function startIdleTimer() {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if (preSendHint.style.display !== 'none') {
+          // 还没发过留言，自动返回
+          showRolesView();
+        }
+      }, IDLE_TIMEOUT * 1000);
+    }
+
+    function clearIdleTimer() {
+      clearTimeout(idleTimer);
+      idleTimer = null;
+    }
+
+    // ==================== 角色切换 ====================
+    navBack.addEventListener('click', showRolesView);
+
+    navNext.addEventListener('click', () => {
+      const nextIdx = (currentRoleIdx + 1) % ROLES.length;
+      showMessageView(nextIdx);
+    });
+
+    // 左右滑动手势切换（可选增强）
+    let touchStartX = 0;
+    viewMessages.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    viewMessages.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 80) {
+        const nextIdx = dx < 0
+          ? (currentRoleIdx + 1) % ROLES.length
+          : (currentRoleIdx - 1 + ROLES.length) % ROLES.length;
+        showMessageView(nextIdx);
+      }
+    });
+
+    // ==================== 构建角色卡片 ====================
+    function buildRoleCards() {
+      ROLES.forEach((role, i) => {
+        const card = document.createElement('div');
+        card.className = 'role-card memphis-panel';
+
+        let imgHtml;
+        if (role.image) {
+          const blendClass = role.blend || '';
+          imgHtml = `<img src="${role.image}" alt="${role.name}" class="${blendClass}" loading="lazy">`;
+        } else {
+          imgHtml = STAR_SVG;
+        }
+
+        card.innerHTML = `
+          <div class="card-img">${imgHtml}</div>
+          <div class="card-text">
+            <div class="name">${role.name}</div>
+            ${role.alias ? `<div class="alias">${role.alias}</div>` : ''}
+          </div>
+        `;
+        card.addEventListener('click', () => showMessageView(i));
+        rolesGrid.appendChild(card);
+      });
+    }
+    buildRoleCards();
 
     // ==================== 背景音乐 ====================
     let musicOn = true;
@@ -868,179 +868,116 @@
       }
     }, { once: true });
 
-    musicBtn.addEventListener('click', () => {
+    musicBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
       if (musicOn) {
         bgm.pause();
         musicOn = false;
       } else {
-        bgm.play().then(() => {
-          musicOn = true;
-        }).catch(() => {});
+        bgm.play().then(() => { musicOn = true; }).catch(() => {});
         musicOn = true;
       }
       updateMusicUI();
     });
 
-    // ==================== 浮动儿童画廊（物理碰撞版）====================
-    function initFloatingGallery() {
-      const layer = document.getElementById('gallery-layer');
-      const arts = [
-        { src: 'assets/变色龙.png', color: 'var(--pink)',     size: 150 },
-        { src: 'assets/大树.png',   color: 'var(--teal)',     size: 145 },
-        { src: 'assets/鸟巢.png',   color: 'var(--coral)',    size: 145 },
-        { src: 'assets/风.png',     color: 'var(--yellow)',   size: 135 },
-        { src: 'assets/乌隼.png',   color: 'var(--mint)',     size: 150 },
-        { src: 'assets/月亮.png',   color: 'var(--lavender)', size: 140 },
-        { src: 'assets/空气.png',   color: 'var(--purple)',   size: 155 },
-      ];
+    // ==================== 孟菲斯几何背景（精简版） ====================
+    const geofield = document.getElementById('geofield');
+    const geoCtx = geofield.getContext('2d');
+    let geoShapes = [];
+    const SHAPE_COUNT = 50;
 
-      let W = window.innerWidth;
-      let H = window.innerHeight;
-      const items = [];
+    const memphisColors = [
+      '#FF71CE', '#FFCE5C', '#86CCCA', '#8B6BAE',
+      '#FF6B6B', '#7ECB9A', '#B8A9E8', '#FFB347',
+    ];
 
-      function rand(min, max) { return min + Math.random() * (max - min); }
-
-      function findSafePos(width, height, existing) {
-        for (let attempt = 0; attempt < 200; attempt++) {
-          const x = rand(20, W - width - 20);
-          const y = rand(20, H - height - 20);
-          let ok = true;
-          for (const o of existing) {
-            if (x < o.x + o.w && x + width > o.x &&
-                y < o.y + o.h && y + height > o.y) {
-              ok = false; break;
-            }
-          }
-          if (ok) return { x, y };
-        }
-        return { x: rand(20, W - width - 20), y: rand(20, H - height - 20) };
-      }
-
-      arts.forEach((art, i) => {
-        const frame = document.createElement('div');
-        frame.className = 'art-frame';
-        frame.style.width = art.size + 'px';
-        frame.style.willChange = 'transform';
-
-        const rot = [2, -3, 4, -2, 3, -4, 1][i];
-
-        const img = document.createElement('img');
-        img.src = art.src;
-        img.alt = '';
-        img.loading = 'lazy';
-        if (art.src.includes('大树')) img.style.mixBlendMode = 'multiply';
-        else if (art.src.includes('鸟巢')) img.style.mixBlendMode = 'screen';
-        frame.appendChild(img);
-        layer.appendChild(frame);
-
-        const item = {
-          el: frame,
-          w: art.size,
-          h: art.size,
-          x: 0, y: 0,
-          vx: rand(0.25, 0.55) * (Math.random() < 0.5 ? 1 : -1),
-          vy: rand(0.2, 0.45) * (Math.random() < 0.5 ? 1 : -1),
-          rot: rot,
-          floatPhase: rand(0, Math.PI * 2),
-        };
-
-        img.onload = () => {
-          const ratio = img.naturalHeight / img.naturalWidth;
-          item.h = art.size * ratio;
-          const pos = findSafePos(item.w, item.h, items);
-          item.x = pos.x;
-          item.y = pos.y;
-        };
-
-        // 图片未加载前先用正方形估算
-        const pos = findSafePos(item.w, item.h, items);
-        item.x = pos.x;
-        item.y = pos.y;
-        items.push(item);
-      });
-
-      function rectsOverlap(a, b) {
-        return a.x < b.x + b.w && a.x + a.w > b.x &&
-               a.y < b.y + b.h && a.y + a.h > b.y;
-      }
-
-      function resolveCollision(a, b) {
-        const overlapX = Math.min(a.x + a.w - b.x, b.x + b.w - a.x);
-        const overlapY = Math.min(a.y + a.h - b.y, b.y + b.h - a.y);
-
-        if (overlapX < overlapY) {
-          // 水平碰撞
-          const push = overlapX * 0.52;
-          if (a.x < b.x) { a.x -= push; b.x += push; }
-          else           { a.x += push; b.x -= push; }
-          a.vx = -a.vx;
-          b.vx = -b.vx;
-        } else {
-          // 垂直碰撞
-          const push = overlapY * 0.52;
-          if (a.y < b.y) { a.y -= push; b.y += push; }
-          else           { a.y += push; b.y -= push; }
-          a.vy = -a.vy;
-          b.vy = -b.vy;
-        }
-      }
-
-      let lastT = performance.now();
-      function tick(now) {
-        const dt = Math.min((now - lastT) / 16.67, 3); // 以60fps为基准，限制最大步长
-        lastT = now;
-
-        W = window.innerWidth;
-        H = window.innerHeight;
-
-        for (const item of items) {
-          // 正弦浮动叠加在 y 上
-          const floatY = Math.sin(now * 0.0008 + item.floatPhase) * 0.35 * dt;
-
-          item.x += item.vx * dt;
-          item.y += (item.vy + floatY) * dt;
-
-          // 边界反弹（留一点边距）
-          if (item.x < 10) { item.x = 10; item.vx = Math.abs(item.vx); }
-          if (item.x + item.w > W - 10) { item.x = W - 10 - item.w; item.vx = -Math.abs(item.vx); }
-          if (item.y < 10) { item.y = 10; item.vy = Math.abs(item.vy); }
-          if (item.y + item.h > H - 10) { item.y = H - 10 - item.h; item.vy = -Math.abs(item.vy); }
-        }
-
-        // 碰撞检测与响应
-        for (let i = 0; i < items.length; i++) {
-          for (let j = i + 1; j < items.length; j++) {
-            if (rectsOverlap(items[i], items[j])) {
-              resolveCollision(items[i], items[j]);
-            }
-          }
-        }
-
-        // 应用 transform
-        for (const item of items) {
-          item.el.style.transform = `translate3d(${item.x.toFixed(1)}px, ${item.y.toFixed(1)}px, 0) rotate(${item.rot}deg)`;
-        }
-
-        requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
+    function resizeGeofield() {
+      geofield.width = window.innerWidth;
+      geofield.height = window.innerHeight;
     }
-    initFloatingGallery();
 
-    // ==================== 二维码 ====================
-    const sendUrl = location.origin + '/send.html';
-    const qrImg = document.getElementById('qr-img');
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(sendUrl)}`;
-    qrImg.onerror = () => {
-      fetch('/api/qrcode')
-        .then(r => r.json())
-        .then(data => { qrImg.src = data.qrcode; })
-        .catch(() => {
-          document.getElementById('qr-area').querySelector('p').textContent = '二维码加载失败';
+    function createGeoShapes() {
+      geoShapes = [];
+      for (let i = 0; i < SHAPE_COUNT; i++) {
+        geoShapes.push({
+          type: Math.floor(Math.random() * 5),
+          x: Math.random() * geofield.width,
+          y: Math.random() * geofield.height,
+          size: Math.random() * 8 + 3,
+          color: memphisColors[Math.floor(Math.random() * memphisColors.length)],
+          baseAlpha: Math.random() * 0.18 + 0.06,
+          rotation: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.003,
+          floatSpeed: Math.random() * 0.012 + 0.003,
+          floatPhase: Math.random() * Math.PI * 2,
         });
-    };
-    document.getElementById('send-url-text').textContent = sendUrl;
-    document.getElementById('link-hint').style.display = 'block';
+      }
+    }
+
+    function drawGeoShapes() {
+      geoCtx.clearRect(0, 0, geofield.width, geofield.height);
+      const t = Date.now() / 1000;
+
+      for (const s of geoShapes) {
+        const yOffset = Math.sin(t * s.floatSpeed * 8 + s.floatPhase) * 6;
+        const alpha = s.baseAlpha + Math.sin(t * 0.7 + s.floatPhase) * 0.04;
+        geoCtx.globalAlpha = Math.max(0.03, Math.min(0.28, alpha));
+        geoCtx.fillStyle = s.color;
+        geoCtx.strokeStyle = s.color;
+        geoCtx.lineWidth = 1.2;
+
+        const rot = s.rotation + t * s.rotSpeed;
+        const dy = s.y + yOffset;
+
+        geoCtx.save();
+        geoCtx.translate(s.x, dy);
+        geoCtx.rotate(rot);
+        switch (s.type) {
+          case 0: // circle
+            geoCtx.beginPath();
+            geoCtx.arc(0, 0, s.size, 0, Math.PI * 2);
+            geoCtx.fill();
+            break;
+          case 1: // triangle
+            geoCtx.beginPath();
+            geoCtx.moveTo(0, -s.size);
+            geoCtx.lineTo(-s.size * 0.866, s.size * 0.5);
+            geoCtx.lineTo(s.size * 0.866, s.size * 0.5);
+            geoCtx.closePath();
+            geoCtx.fill();
+            break;
+          case 2: // diamond
+            geoCtx.beginPath();
+            geoCtx.moveTo(0, -s.size);
+            geoCtx.lineTo(s.size * 0.7, 0);
+            geoCtx.lineTo(0, s.size);
+            geoCtx.lineTo(-s.size * 0.7, 0);
+            geoCtx.closePath();
+            geoCtx.fill();
+            break;
+          case 3: // cross
+            geoCtx.fillRect(-s.size * 0.55, -s.size * 0.2, s.size * 1.1, s.size * 0.4);
+            geoCtx.fillRect(-s.size * 0.2, -s.size * 0.55, s.size * 0.4, s.size * 1.1);
+            break;
+          case 4: // ring
+            geoCtx.beginPath();
+            geoCtx.arc(0, 0, s.size, 0, Math.PI * 2);
+            geoCtx.stroke();
+            break;
+        }
+        geoCtx.restore();
+      }
+      geoCtx.globalAlpha = 1;
+      requestAnimationFrame(drawGeoShapes);
+    }
+
+    resizeGeofield();
+    createGeoShapes();
+    drawGeoShapes();
+    window.addEventListener('resize', () => {
+      resizeGeofield();
+      createGeoShapes();
+    });
   </script>
 </body>
 </html>

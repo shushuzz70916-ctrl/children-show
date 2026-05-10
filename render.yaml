@@ -1,22 +1,17 @@
 services:
   - type: web
-    name: children-show-danmaku
+    name: children-show-message-board
     env: node
-    plan: free
+    # starter plan ($7/month) required for persistent disk; free plan loses data on restart
+    plan: starter
     buildCommand: "npm install"
     startCommand: "node server.js"
+    disk:
+      name: sqlite-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
     envVars:
       - key: DEEPSEEK_API_KEY
         sync: false
-      - key: BASE_URL
+      - key: ADMIN_TOKEN
         sync: false
-
-staticSites:
-  - type: static
-    name: quantum-computing
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    buildCommand: null
-    publishDir: quantum-site

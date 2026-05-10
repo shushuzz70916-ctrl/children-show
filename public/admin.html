@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 — 儿童展览留言板</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1040;
+      color: #e0e0e0;
+      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      min-height: 100vh;
+    }
+
+    #login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    #login-screen h1 { font-size: 24px; color: #FFCE5C; margin-bottom: 32px; }
+    #login-form { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 320px; }
+
+    input[type="password"] {
+      padding: 14px 16px;
+      font-size: 16px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      outline: none;
+    }
+    input[type="password"]:focus { border-color: #8B6BAE; }
+
+    .btn {
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: 700;
+      border: 2px solid rgba(255,255,255,0.7);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.75; }
+    .btn-primary { background: #8B6BAE; color: #fff; }
+    .btn-danger  { background: #E17055; color: #fff; }
+    .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 8px; border-width: 1.5px; }
+
+    #error-msg { color: #E17055; font-size: 14px; text-align: center; display: none; }
+
+    #admin-screen { display: none; padding: 24px 20px; max-width: 900px; margin: 0 auto; }
+
+    .admin-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .admin-header h1 { font-size: 20px; color: #FFCE5C; }
+    #msg-count { font-size: 13px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .role-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .filter-btn {
+      padding: 6px 14px;
+      font-size: 13px;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      border-radius: 20px;
+      background: transparent;
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn.active { background: #8B6BAE; border-color: #8B6BAE; color: #fff; }
+
+    #messages-table { width: 100%; border-collapse: collapse; }
+    #messages-table th {
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    #messages-table td {
+      padding: 12px 12px;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      vertical-align: top;
+    }
+    #messages-table tr:hover td { background: rgba(255,255,255,0.04); }
+    .td-role  { color: #FFCE5C; white-space: nowrap; width: 80px; }
+    .td-text  { color: #e0e0e0; word-break: break-word; }
+    .td-time  { color: rgba(255,255,255,0.35); white-space: nowrap; font-size: 12px; width: 140px; }
+    .td-action { width: 60px; text-align: right; }
+
+    #empty-hint { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.3); font-size: 15px; }
+    #loading    { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.4); font-size: 15px; }
+
+    .confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .confirm-overlay.show { display: flex; }
+    .confirm-box {
+      background: #241a4e;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 16px;
+      padding: 28px 32px;
+      max-width: 340px;
+      width: 90%;
+      text-align: center;
+    }
+    .confirm-box p {
+      font-size: 15px;
+      color: #e0e0e0;
+      margin-bottom: 24px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .confirm-actions { display: flex; gap: 12px; justify-content: center; }
+  </style>
+</head>
+<body>
+
+  <div id="login-screen">
+    <h1>管理后台</h1>
+    <div id="login-form">
+      <input type="password" id="token-input" placeholder="输入管理员密码" autocomplete="current-password">
+      <button class="btn btn-primary" id="login-btn">登录</button>
+      <div id="error-msg">密码错误或未配置</div>
+    </div>
+  </div>
+
+  <div id="admin-screen">
+    <div class="admin-header">
+      <div>
+        <h1>留言管理</h1>
+        <div id="msg-count"></div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" id="refresh-btn">刷新</button>
+        <button class="btn btn-danger" id="clear-all-btn">清空所有留言</button>
+      </div>
+    </div>
+    <div class="role-filter" id="role-filter"></div>
+    <div id="loading">加载中...</div>
+    <div id="empty-hint" style="display:none;">暂无留言</div>
+    <table id="messages-table" style="display:none;">
+      <thead>
+        <tr>
+          <th>角色</th><th>内容</th><th>时间</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="msg-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-box">
+      <p id="confirm-text"></p>
+      <div class="confirm-actions">
+        <button class="btn" id="confirm-cancel" style="background:rgba(255,255,255,0.1);">取消</button>
+        <button class="btn btn-danger" id="confirm-ok">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ROLE_NAMES = {
+      tree: '树干', moon: '月亮', star: '星星', birdnest: '鸟巢',
+      falcon: '乌隼', wind: '风', chameleon: '变色龙', air: '空气'
+    };
+    const ROLE_IDS = ['tree','moon','star','birdnest','falcon','wind','chameleon','air'];
+
+    let adminToken = '';
+    let allMessages = [];
+    let activeFilter = 'all';
+
+    const loginScreen = document.getElementById('login-screen');
+    const adminScreen = document.getElementById('admin-screen');
+    const tokenInput  = document.getElementById('token-input');
+    const errorMsg    = document.getElementById('error-msg');
+
+    async function doLogin() {
+      const token = tokenInput.value.trim();
+      if (!token) return;
+      try {
+        const res = await fetch('/api/admin/messages', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.status === 401 || res.status === 503) {
+          errorMsg.style.display = 'block';
+          return;
+        }
+        adminToken = token;
+        sessionStorage.setItem('adminToken', token);
+        const data = await res.json();
+        loginScreen.style.display = 'none';
+        adminScreen.style.display = 'block';
+        allMessages = data;
+        buildFilters();
+        render();
+      } catch {
+        errorMsg.textContent = '网络错误，请重试';
+        errorMsg.style.display = 'block';
+      }
+    }
+
+    document.getElementById('login-btn').addEventListener('click', doLogin);
+    tokenInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+    const saved = sessionStorage.getItem('adminToken');
+    if (saved) { tokenInput.value = saved; doLogin(); }
+
+    async function loadMessages() {
+      const res = await fetch('/api/admin/messages', {
+        headers: { 'Authorization': `Bearer ${adminToken}` }
+      });
+      if (!res.ok) return;
+      allMessages = await res.json();
+      render();
+    }
+
+    document.getElementById('refresh-btn').addEventListener('click', loadMessages);
+
+    function buildFilters() {
+      const container = document.getElementById('role-filter');
+      container.innerHTML = '';
+      const allBtn = makeFilterBtn('全部', 'all', true);
+      container.appendChild(allBtn);
+      ROLE_IDS.forEach(id => container.appendChild(makeFilterBtn(ROLE_NAMES[id], id, false)));
+    }
+
+    function makeFilterBtn(label, role, active) {
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn' + (active ? ' active' : '');
+      btn.textContent = label;
+      btn.dataset.role = role;
+      btn.addEventListener('click', () => {
+        activeFilter = role;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.role === role));
+        render();
+      });
+      return btn;
+    }
+
+    function render() {
+      const loading = document.getElementById('loading');
+      const empty   = document.getElementById('empty-hint');
+      const table   = document.getElementById('messages-table');
+      const tbody   = document.getElementById('msg-tbody');
+
+      const filtered = activeFilter === 'all'
+        ? allMessages
+        : allMessages.filter(m => m.role === activeFilter);
+
+      loading.style.display = 'none';
+      document.getElementById('msg-count').textContent =
+        `共 ${allMessages.length} 条 | 当前显示 ${filtered.length} 条`;
+
+      if (filtered.length === 0) {
+        empty.style.display = 'block';
+        table.style.display = 'none';
+        return;
+      }
+      empty.style.display = 'none';
+      table.style.display = 'table';
+      tbody.innerHTML = '';
+
+      filtered.forEach(m => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="td-role">${ROLE_NAMES[m.role] || m.role}</td>
+          <td class="td-text">${escapeHtml(m.text)}</td>
+          <td class="td-time">${m.created_at}</td>
+          <td class="td-action">
+            <button class="btn btn-danger btn-sm del-btn" data-id="${m.id}">删除</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll('.del-btn').forEach(btn => {
+        btn.addEventListener('click', () => confirmDelete(parseInt(btn.dataset.id)));
+      });
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function confirmDelete(id) {
+      const msg = allMessages.find(m => m.id === id);
+      if (!msg) return;
+      const preview = msg.text.length > 40 ? msg.text.slice(0, 40) + '…' : msg.text;
+      showConfirm(`确认删除这条留言？\n\n"${preview}"`, async () => {
+        await fetch(`/api/messages/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        allMessages = allMessages.filter(m => m.id !== id);
+        render();
+      });
+    }
+
+    document.getElementById('clear-all-btn').addEventListener('click', () => {
+      showConfirm('确认清空全部留言？\n此操作不可撤销。', async () => {
+        await fetch('/api/clear-messages', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        allMessages = [];
+        render();
+      });
+    });
+
+    let confirmCb = null;
+    function showConfirm(text, cb) {
+      confirmCb = cb;
+      document.getElementById('confirm-text').textContent = text;
+      document.getElementById('confirm-overlay').classList.add('show');
+    }
+    document.getElementById('confirm-cancel').addEventListener('click', () => {
+      document.getElementById('confirm-overlay').classList.remove('show');
+      confirmCb = null;
+    });
+    document.getElementById('confirm-ok').addEventListener('click', () => {
+      document.getElementById('confirm-overlay').classList.remove('show');
+      if (confirmCb) { confirmCb(); confirmCb = null; }
+    });
+  </script>
+</body>
+</html>
