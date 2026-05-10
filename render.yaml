@@ -2,14 +2,9 @@ services:
   - type: web
     name: children-show-message-board
     env: node
-    # starter plan ($7/month) required for persistent disk; free plan loses data on restart
-    plan: starter
+    plan: free
     buildCommand: "npm install"
     startCommand: "node server.js"
-    disk:
-      name: sqlite-data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
     envVars:
       - key: DEEPSEEK_API_KEY
         sync: false
