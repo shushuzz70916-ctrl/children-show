@@ -187,6 +187,21 @@ app.post('/api/clear-messages', (req, res) => {
   res.json({ success: true });
 });
 
+// Admin: test content moderation
+app.post('/api/admin/moderate-test', async (req, res) => {
+  if (!checkAdminAuth(req, res)) return;
+  const { text } = req.body || {};
+  const trimmed = (text || '').trim();
+  if (!trimmed || trimmed.length > 100) {
+    return res.status(400).json({ error: '内容不能为空或超过100字' });
+  }
+  if (!DEEPSEEK_API_KEY) {
+    return res.json({ configured: false, message: '未配置 DEEPSEEK_API_KEY，所有内容直接通过' });
+  }
+  const approved = await moderateContent(trimmed);
+  res.json({ configured: true, text: trimmed, result: approved ? 'pass' : 'reject' });
+});
+
 // Admin: list all messages
 app.get('/api/admin/messages', (req, res) => {
   if (!checkAdminAuth(req, res)) return;

@@ -129,6 +129,42 @@
       word-break: break-word;
     }
     .confirm-actions { display: flex; gap: 12px; justify-content: center; }
+
+    /* 审核测试面板 */
+    #moderate-panel {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    #moderate-panel h2 {
+      font-size: 16px;
+      color: #FFCE5C;
+      margin-bottom: 12px;
+    }
+    .moderate-row { display: flex; gap: 10px; }
+    .moderate-row input {
+      flex: 1;
+      padding: 10px 14px;
+      font-size: 15px;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      outline: none;
+    }
+    .moderate-row input:focus { border-color: #8B6BAE; }
+    #moderate-result {
+      margin-top: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      display: none;
+    }
+    #moderate-result.pass { color: #7ECB9A; display: block; }
+    #moderate-result.reject { color: #E17055; display: block; }
+    #moderate-result.error { color: #FF8E53; display: block; }
+    #moderate-result.info { color: #86CCCA; display: block; }
   </style>
 </head>
 <body>
@@ -152,6 +188,14 @@
         <button class="btn btn-primary" id="refresh-btn">刷新</button>
         <button class="btn btn-danger" id="clear-all-btn">清空所有留言</button>
       </div>
+    </div>
+    <div id="moderate-panel">
+      <h2>文字审核测试</h2>
+      <div class="moderate-row">
+        <input type="text" id="moderate-input" maxlength="100" placeholder="输入测试文字，按回车或点按钮">
+        <button class="btn btn-primary" id="moderate-btn">审核</button>
+      </div>
+      <div id="moderate-result"></div>
     </div>
     <div class="role-filter" id="role-filter"></div>
     <div id="loading">加载中...</div>
@@ -329,6 +373,53 @@
         allMessages = [];
         render();
       });
+    });
+
+    // ---- 文字审核测试 ----
+    const moderateInput  = document.getElementById('moderate-input');
+    const moderateBtn    = document.getElementById('moderate-btn');
+    const moderateResult = document.getElementById('moderate-result');
+
+    async function doModerateTest() {
+      const text = moderateInput.value.trim();
+      if (!text) return;
+
+      moderateResult.className = '';
+      moderateResult.style.display = 'block';
+      moderateResult.textContent = '审核中...';
+      moderateBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/admin/moderate-test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+          body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+        if (data.configured === false) {
+          moderateResult.className = 'info';
+          moderateResult.textContent = data.message;
+        } else if (data.result === 'pass') {
+          moderateResult.className = 'pass';
+          moderateResult.textContent = `✓ 通过 —「${data.text}」`;
+        } else if (data.result === 'reject') {
+          moderateResult.className = 'reject';
+          moderateResult.textContent = `✗ 拒绝 —「${data.text}」`;
+        } else {
+          moderateResult.className = 'error';
+          moderateResult.textContent = data.error || '审核失败';
+        }
+      } catch {
+        moderateResult.className = 'error';
+        moderateResult.textContent = '网络错误';
+      } finally {
+        moderateBtn.disabled = false;
+      }
+    }
+
+    moderateBtn.addEventListener('click', doModerateTest);
+    moderateInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') doModerateTest();
     });
 
     let confirmCb = null;
