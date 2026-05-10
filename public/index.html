@@ -328,16 +328,6 @@
       gap: 10px;
       -webkit-overflow-scrolling: touch;
     }
-    .message-list:empty::after {
-      content: '还没有留言，来说第一句吧';
-      display: block;
-      text-align: center;
-      color: rgba(255,255,255,0.3);
-      font-size: 15px;
-      font-weight: 600;
-      padding-top: 60px;
-    }
-
     .msg-card {
       padding: 14px 18px;
       border-radius: 16px;
@@ -416,6 +406,12 @@
       box-shadow: 2px 2px 0 var(--yellow);
       background: #FF8BD8;
     }
+    .input-bar button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: 4px 4px 0 var(--yellow);
+    }
 
     /* 空状态提示 */
     .empty-hint {
@@ -478,11 +474,12 @@
 </head>
 <body>
 
-  <div id="polka-bg"></div>
-  <canvas id="geofield"></canvas>
+  <!-- 星空背景 -->
+  <div id="starfield-deep"></div>
+  <div id="starfield-mid"></div>
+  <!-- 月光环境光 -->
+  <div id="moon-ambient"></div>
   <div id="moon"></div>
-  <div class="geo-triangle-tr"></div>
-  <div class="geo-diamond-bl"></div>
 
   <!-- 背景音乐 -->
   <audio id="bgm" loop preload="auto" src="children-light-music.mp3"></audio>
@@ -534,17 +531,26 @@
   </button>
 
   <script>
-    // ==================== 角色数据 ====================
-    const ROLES = [
-      { id: 'tree',      name: '树干',   alias: '权力中心',       image: 'assets/大树.png', blend: 'multiply' },
-      { id: 'moon',      name: '月亮',   alias: '权力跟班',       image: 'assets/月亮.png', blend: '' },
-      { id: 'star',      name: '星星',   alias: '冷眼小队',       image: null,              blend: '' },
-      { id: 'birdnest',  name: '鸟巢',   alias: '谣言加工厂',     image: 'assets/鸟巢.png', blend: 'screen' },
-      { id: 'falcon',    name: '乌隼',   alias: '悄悄话拆散王',   image: 'assets/乌隼.png', blend: '' },
-      { id: 'wind',      name: '风',     alias: '隐形谣言扩音器', image: 'assets/风.png',   blend: '' },
-      { id: 'chameleon', name: '变色龙', alias: '',               image: 'assets/变色龙.png', blend: '' },
-      { id: 'air',       name: '空气',   alias: '',               image: 'assets/空气.png', blend: '' },
-    ];
+    // ==================== 角色数据（从 API 加载） ====================
+    const ROLE_BLENDS = { tree: 'multiply', birdnest: 'screen' };
+    let ROLES = [];
+
+    async function initRoles() {
+      try {
+        const res = await fetch('/api/roles');
+        if (!res.ok) throw new Error('Failed to load roles');
+        const serverRoles = await res.json();
+        ROLES = serverRoles.map(r => ({
+          ...r,
+          blend: ROLE_BLENDS[r.id] || ''
+        }));
+      } catch {
+        // API 失败则无法使用，显示错误状态
+        rolesGrid.innerHTML = '<div class="empty-hint" style="color:rgba(255,255,255,0.5);font-size:18px;">角色加载失败<br>请刷新页面</div>';
+        return;
+      }
+      buildRoleCards();
+    }
 
     let currentRoleIdx = -1;
 
@@ -624,6 +630,10 @@
       messageList.innerHTML = '';
       try {
         const res = await fetch(`/api/messages/${roleId}`);
+        if (!res.ok) {
+          messageList.innerHTML = '<div class="empty-hint">加载失败，请刷新页面</div>';
+          return;
+        }
         const msgs = await res.json();
         if (!Array.isArray(msgs) || msgs.length === 0) {
           messageList.innerHTML = '<div class="empty-hint">还没有留言，来说第一句吧</div>';
@@ -658,15 +668,26 @@
       return div.innerHTML;
     }
 
-    function formatTime(iso) {
-      if (!iso) return '';
-      const d = new Date(iso);
-      const pad = n => String(n).padStart(2, '0');
-      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    function formatTime(str) {
+      if (!str || str.length < 19) return '';
+      const hh = str.slice(11, 13);
+      const mm = str.slice(14, 16);
+      const ss = str.slice(17, 19);
+      return `${hh}:${mm}:${ss}`;
     }
 
     // ==================== 发送留言 ====================
+    let sending = false;
+
+    function setSendingState(disabled) {
+      sending = disabled;
+      sendBtn.disabled = disabled;
+      sendBtn.textContent = disabled ? '发送中...' : '发送';
+      msgInput.disabled = disabled;
+    }
+
     async function sendMessage() {
+      if (sending) return;
       const text = msgInput.value.trim();
       if (!text) return showToast('请输入留言内容', '#FF8E53');
       if (text.length > 100) return showToast('内容不能超过100字', '#FF8E53');
@@ -674,6 +695,7 @@
 
       const role = ROLES[currentRoleIdx];
       showToast('审核中...', '#45B7D1');
+      setSendingState(true);
       msgInput.value = '';
 
       try {
@@ -686,7 +708,6 @@
         if (data.rejected) {
           showToast('内容不适合，请重新输入', '#E17055');
         } else if (data.id) {
-          // 首次发送成功 → 展示留言列表
           if (preSendHint.style.display !== 'none') {
             clearIdleTimer();
             preSendHint.style.display = 'none';
@@ -701,6 +722,9 @@
         }
       } catch (err) {
         showToast('网络错误，请重试', '#FF8E53');
+      } finally {
+        setSendingState(false);
+        msgInput.focus();
       }
     }
 
@@ -831,10 +855,10 @@
         rolesGrid.appendChild(card);
       });
     }
-    buildRoleCards();
+    initRoles();
 
     // ==================== 背景音乐 ====================
-    let musicOn = true;
+    let musicOn = false;
     bgm.volume = 0.3;
 
     function updateMusicUI() {
@@ -850,21 +874,15 @@
         musicBtn.style.background = 'rgba(26, 16, 64, 0.6)';
       }
     }
+    updateMusicUI();
 
-    function tryAutoplay() {
-      bgm.play().then(() => {
-        musicOn = true;
-        updateMusicUI();
-      }).catch(() => {
-        musicOn = false;
-        updateMusicUI();
-      });
-    }
-    tryAutoplay();
-
+    // 首次用户交互时尝试播放
     document.addEventListener('click', () => {
-      if (musicOn && bgm.paused) {
-        bgm.play().catch(() => {});
+      if (!musicOn) {
+        bgm.play().then(() => {
+          musicOn = true;
+          updateMusicUI();
+        }).catch(() => {});
       }
     }, { once: true });
 
@@ -874,8 +892,10 @@
         bgm.pause();
         musicOn = false;
       } else {
-        bgm.play().then(() => { musicOn = true; }).catch(() => {});
-        musicOn = true;
+        bgm.play().then(() => {
+          musicOn = true;
+          updateMusicUI();
+        }).catch(() => {});
       }
       updateMusicUI();
     });
