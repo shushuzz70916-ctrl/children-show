@@ -206,6 +206,23 @@ CREATE INDEX idx_created ON messages(created_at);
 - Render 页面当前已手动升级为 `Starter` 实例；`render.yaml` 仍写 `plan: free`，后续如同步 Blueprint，需要先检查并处理这个不一致
 - 当前未挂载持久磁盘，服务重启后 `messages.db` 仍可能丢失；正式长期使用前需单独处理持久化
 
+### 开展前检查清单（2026-05-17 底开展前完成）
+
+- [ ] **添加持久化磁盘**：修改 `render.yaml` 添加磁盘配置（约 $7/月），防止数据丢失
+- [ ] **国内访问测试**：用手机（展览现场 WiFi/4G）打开网站测试加载速度（< 3 秒可接受）
+- [ ] **并发压力测试**：`npx autocannon -c 50 -d 30 https://children-show-message-board.onrender.com/api/messages`，测试 50 人同时使用
+- [ ] **完整流程测试**：发送 10 条测试留言，验证解锁、倒计时、管理后台等功能
+- [ ] **现场操作手册**：给工作人员准备简单的使用指南（如何打开网站、如何管理留言、如何重启）
+
+### 项目当前状态（2026-05-17）
+
+- 🟢 **线上运行**：https://children-show-message-board.onrender.com/
+- 🟢 **安全加固**：Token 验证、XSS 防护、CSP、防爆破、留言解锁机制已完成
+- 🟢 **内容审核**：DeepSeek API 集成，超时保护（8 秒），失败拒绝留言
+- 🟢 **管理后台**：支持查看、删除、按角色筛选、测试审核功能
+- 🟡 **数据持久**：待开展前添加持久化磁盘
+- 🟢 **文档同步**：CLAUDE.md ↔ AGENTS.md 自动双向同步（Git Hook）
+
 ---
 
 ## 注意事项（修改此项目时必须遵守）

@@ -5,14 +5,14 @@
 ## 会话启动（每次新会话自动执行）
 
 1. 运行 `date "+%Y-%m-%d %H:%M"` 获取当前日期和时间
-2. **重读 `~/.Codex/AGENTS.md` 和本项目 `AGENTS.md` 核心约束，确认已激活**
+2. **重读 `~/.Codex/AGENTS.md` 和本项目 `CLAUDE.md` 核心约束，确认已激活**
 3. 运行 `git log --oneline -3` 查看最近3次提交
 4. 运行 `git status` 查看当前工作区状态
 5. 向用户汇报：**约束状态 + 当前时间 + 上次做了什么 + 当前工作区状态**
 
 汇报格式：
 - 第一行：`AGENTS.md 约束状态：✅ 已激活（结论先行 / 不谄媚 / 数据纪律）`
-- 后续不超过 9 行，不重复 AGENTS.md 中已有的静态信息。
+- 后续不超过 9 行，不重复 CLAUDE.md 中已有的静态信息。
 
 **时间感知规则**：涉及日期判断时，必须运行 `date` 命令确认当前时间。
 
@@ -63,7 +63,7 @@ children-show/
 ├── render.yaml            # Render Blueprint 部署配置
 ├── .env.example           # 环境变量模板
 ├── .gitignore             # 忽略 node_modules/ .env data/messages.db
-├── AGENTS.md              # 本文件
+├── CLAUDE.md              # 本文件
 ├── public/
 │   ├── index.html         # 平板端 SPA（角色选择 + 留言页）
 │   ├── admin.html         # 管理后台（需 ADMIN_TOKEN 登录）
@@ -205,6 +205,23 @@ CREATE INDEX idx_created ON messages(created_at);
 - 需在 Render 环境变量中填入 `DEEPSEEK_API_KEY` 和 `ADMIN_TOKEN`
 - Render 页面当前已手动升级为 `Starter` 实例；`render.yaml` 仍写 `plan: free`，后续如同步 Blueprint，需要先检查并处理这个不一致
 - 当前未挂载持久磁盘，服务重启后 `messages.db` 仍可能丢失；正式长期使用前需单独处理持久化
+
+### 开展前检查清单（2026-05-17 底开展前完成）
+
+- [ ] **添加持久化磁盘**：修改 `render.yaml` 添加磁盘配置（约 $7/月），防止数据丢失
+- [ ] **国内访问测试**：用手机（展览现场 WiFi/4G）打开网站测试加载速度（< 3 秒可接受）
+- [ ] **并发压力测试**：`npx autocannon -c 50 -d 30 https://children-show-message-board.onrender.com/api/messages`，测试 50 人同时使用
+- [ ] **完整流程测试**：发送 10 条测试留言，验证解锁、倒计时、管理后台等功能
+- [ ] **现场操作手册**：给工作人员准备简单的使用指南（如何打开网站、如何管理留言、如何重启）
+
+### 项目当前状态（2026-05-17）
+
+- 🟢 **线上运行**：https://children-show-message-board.onrender.com/
+- 🟢 **安全加固**：Token 验证、XSS 防护、CSP、防爆破、留言解锁机制已完成
+- 🟢 **内容审核**：DeepSeek API 集成，超时保护（8 秒），失败拒绝留言
+- 🟢 **管理后台**：支持查看、删除、按角色筛选、测试审核功能
+- 🟡 **数据持久**：待开展前添加持久化磁盘
+- 🟢 **文档同步**：CLAUDE.md ↔ AGENTS.md 自动双向同步（Git Hook）
 
 ---
 
