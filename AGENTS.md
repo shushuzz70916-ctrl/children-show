@@ -1,18 +1,18 @@
-# CLAUDE.md — 儿童展览匿名角色留言板
+# AGENTS.md — 儿童展览匿名角色留言板
 
 **每次会话首次回复前，必须先调用 `using-superpowers` skill，再处理用户请求。**
 
 ## 会话启动（每次新会话自动执行）
 
 1. 运行 `date "+%Y-%m-%d %H:%M"` 获取当前日期和时间
-2. **重读 `~/.claude/CLAUDE.md` 和本项目 `CLAUDE.md` 核心约束，确认已激活**
+2. **重读 `~/.Codex/AGENTS.md` 和本项目 `AGENTS.md` 核心约束，确认已激活**
 3. 运行 `git log --oneline -3` 查看最近3次提交
 4. 运行 `git status` 查看当前工作区状态
 5. 向用户汇报：**约束状态 + 当前时间 + 上次做了什么 + 当前工作区状态**
 
 汇报格式：
-- 第一行：`CLAUDE.md 约束状态：✅ 已激活（结论先行 / 不谄媚 / 数据纪律）`
-- 后续不超过 9 行，不重复 CLAUDE.md 中已有的静态信息。
+- 第一行：`AGENTS.md 约束状态：✅ 已激活（结论先行 / 不谄媚 / 数据纪律）`
+- 后续不超过 9 行，不重复 AGENTS.md 中已有的静态信息。
 
 **时间感知规则**：涉及日期判断时，必须运行 `date` 命令确认当前时间。
 
@@ -63,7 +63,7 @@ children-show/
 ├── render.yaml            # Render Blueprint 部署配置
 ├── .env.example           # 环境变量模板
 ├── .gitignore             # 忽略 node_modules/ .env data/messages.db
-├── CLAUDE.md              # 本文件
+├── AGENTS.md              # 本文件
 ├── public/
 │   ├── index.html         # 平板端 SPA（角色选择 + 留言页）
 │   ├── admin.html         # 管理后台（需 ADMIN_TOKEN 登录）
