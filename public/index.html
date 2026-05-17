@@ -821,8 +821,8 @@
         card.innerHTML = `
           <div class="card-img">${imgHtml}</div>
           <div class="card-text">
-            <div class="name">${role.name}</div>
-            ${role.alias ? `<div class="alias">${role.alias}</div>` : ''}
+            <div class="name">${escapeHtml(role.name)}</div>
+            ${role.alias ? `<div class="alias">${escapeHtml(role.alias)}</div>` : ''}
           </div>
         `;
         card.addEventListener('click', () => showMessageView(i));

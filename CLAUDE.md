@@ -230,3 +230,4 @@ CREATE INDEX idx_created ON messages(created_at);
 18. **`created_at` 格式**：统一本地时间字符串 `YYYY-MM-DD HH:MM:SS`，前端 `formatTime()` 只显示时分秒
 19. **留言历史解锁**：`GET /api/messages/:roleId` 必须带同角色发送留言后返回的 `unlockToken`；token 有效期 10 分钟
 20. **管理接口防爆破**：同 IP 管理鉴权失败 5 次后，10 分钟窗口内返回 429
+21. **单实例约束**：解锁 token 存储在内存中，服务重启后全部失效；当前 Render 部署为单进程，如未来扩展到多实例/负载均衡，需将 token 迁移到 Redis 或数据库

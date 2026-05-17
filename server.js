@@ -166,7 +166,7 @@ function createUnlockToken(role) {
 }
 
 function isValidUnlockToken(role, token) {
-  if (!token) return false;
+  if (!token || typeof token !== 'string' || token.length > 100) return false;
   const record = unlockTokens.get(token);
   if (!record) return false;
   if (record.expiresAt < Date.now()) {
