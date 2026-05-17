@@ -562,6 +562,8 @@
     }
 
     // ==================== 视图切换 ====================
+    let currentUnlockToken = '';
+
     function showRolesView() {
       stopCountdown();
       clearIdleTimer();
@@ -569,6 +571,7 @@
       viewRoles.style.display = 'flex';
       musicBtn.style.display = 'flex';
       currentRoleIdx = -1;
+      currentUnlockToken = '';
     }
 
     function showMessageView(roleIdx) {
@@ -580,6 +583,7 @@
       viewMessages.style.display = 'flex';
       musicBtn.style.display = 'none';
       msgInput.value = '';
+      currentUnlockToken = '';
 
       // 隐藏留言列表和倒计时，显示留言前提示
       messageList.style.display = 'none';
@@ -596,7 +600,8 @@
     async function loadMessages(roleId) {
       messageList.innerHTML = '';
       try {
-        const res = await fetch(`/api/messages/${roleId}`);
+        const url = `/api/messages/${roleId}?unlockToken=${encodeURIComponent(currentUnlockToken)}`;
+        const res = await fetch(url);
         if (!res.ok) {
           messageList.innerHTML = '<div class="empty-hint">加载失败，请刷新页面</div>';
           return;
@@ -675,6 +680,7 @@
         if (data.rejected) {
           showToast('内容不适合，请重新输入', '#E17055');
         } else if (data.id) {
+          currentUnlockToken = data.unlockToken || currentUnlockToken;
           if (preSendHint.style.display !== 'none') {
             clearIdleTimer();
             preSendHint.style.display = 'none';
